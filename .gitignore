@@ -1,0 +1,6 @@
+*.o
+*.a
+*.map
+*.elf
+*.bin
+.DS_Store
