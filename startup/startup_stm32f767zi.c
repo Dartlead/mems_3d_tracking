@@ -30,7 +30,7 @@ extern uint32_t __stack_base;        //!# Base of the stack
 void Default_Handler           (void);
 void Reset_Handler             (void);
 void NMI_Handler               (void) __attribute__((weak, alias("Default_Handler")));
-void HardFault_Handler         (void) __attribute__((weak));
+void HardFault_Handler         (void) __attribute__((weak, alias("Default_Handler")));
 void MemManage_Handler         (void) __attribute__((weak, alias("Default_Handler")));
 void BusFault_Handler          (void) __attribute__((weak, alias("Default_Handler")));
 void UsageFault_Handler        (void) __attribute__((weak, alias("Default_Handler")));

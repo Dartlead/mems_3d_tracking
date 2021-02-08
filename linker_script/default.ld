@@ -1,31 +1,55 @@
-/* STM32F767ZI Available Internal Memories:
+/* STM32F767ZI Memory Map (Internal Memories):
+ *
+ * Region                Address Bounds
+ * Auxiliiary SRAM       0x2007 C000 - 0x2007 FFFF
+ * Main SRAM             0x2002 0000 - 0x2007 BFFF
+ * DTCM                  0x2000 0000 - 0x2001 FFFF
+ * Option Bytes          0x1FFF 0000 - 0x1FFF 001F
+ * AXIM OTP              0x1FF0 F000 - 0x1FF0 F41F
+ * AXIM System Memory    0x1FF0 0000 - 0x1FF0 EDBF
+ * AXIM Flash            0x0800 0000 - 0x081F FFFF
+ * ITCM Flash            0x0020 0000 - 0x003F FFFF
+ * ITCM OTP              0x0010 F000 - 0x0010 F41F
+ * ITCM System Memory    0x0010 0000 - 0x0010 EDBF
+ * ITCM                  0x0000 0000 - 0x0000 3FFF
  *
  * SRAM
- * - 368 kB Main SRAM
- *      Region called SRAM1, mapped at 0x2002 0000 - 0x2007 BFFF. Can be accessed as bytes, half-words or full-
- *      words. Accessible by all AHB masters from the AHB bus matrix.
  * - 16 kB Auxiliary SRAM
- *      Region called SRAM2, mapped at 0x2007 C000 - 0x2007 FFFF. Can be accessed as bytes, half-words, or full-
- *      words. Accessible by all AHB masters from the AHB bus matrix.
+ *      Can be accessed as bytes, half-words, or full-words. Accessible by all AHB masters from the AHB bus matrix.
+ * - 368 kB Main SRAM
+ *      Can be accessed as bytes, half-words or full-words. Accessible by all AHB masters from the AHB bus matrix.
  * - 128 kB Data TCM (TCM is implemented with SRAM)
- *      Region called DTCM RAM, mapped at 0x2000 0000 - 0x2001 FFFF. Can be accessed as bytes, half-words, full-
- *      words, or double words. Accessible by all AHB masters from the AHB bus matrix but through a specific AHB
- *      slave bus of the CPU.
+ *      Can be accessed as bytes, half-words, full-words, or double words. Accessible by all AHB masters from the
+ *      AHB bus matrix but through a specific AHB slave bus of the CPU.
  * - 16 kB Instruction TCM (TCM is implemented with SRAM)
- *      Region called ITCM RAM, mapped at 0x0000 0000 - 0x0000 3FFF. Can be accessed as bytes, half-words, or full-
- *      words. Accessible by ONLY the CPU.
+ *      Can be accessed as bytes, half-words, or full-words. Accessible by ONLY the CPU.
  *
  * Flash
  * - 2 MB Internal Flash
- *      The two flash regions (called Flash Memory on AXIM/ITCM Interface in the memory map) refer to the same
- *      physical flash memory but to two different methods of talking to the flash interface.
- *      Flash Memory on AXIM Interface
+ *      The two flash regions (called AXIM/ITCM Flash) refer to the same physical flash memory and differ in which
+ *      bus is used to communicate to the flash.
+ *      AXIM Flash
  *         This memory region is defined by access via the 64-bit AHB interface (which is connected to the AXI
- *         master bus of the M7 core through the AHB bus matrix). This interface supports read and write accesses.
- *      Flash Memory on ITCM Interface
+ *         master bus of the M7 core through the AHB bus matrix). Accesses are accelerated by the L1 cache. This
+ *         interface supports read and write accesses.
+ *      ITCM Flash
  *         This memory region is defined by access via the ITCM bus of the M7 core. Accesses are accelerated by the
  *         ART accelerator which contains a unified 64 cache lines. This interface supports ONLY read accesses thus
  *         is recommended for instruction execution and data reading.
+ *
+ * System Memory
+ * - 60 kB System Memory
+ *      The two system memory regions (called AXIM/ITCM System Memory) refer to the same physical boot ROM and
+ *      differ in which bus is used to communicate to the flash. Irregardless of the flash bank configurations, the
+ *      address of the system memory (accessed either through the AXIM or ITCM interfaces) will not change. This
+ *      region also contains the embedded bootloader which is programmed by ST during production.
+ *
+ * OTP (One-Time Programmable)
+ *      The two OTP memory regions (called AXIM/ITCM OTP) refer to the same physical memory and differ in which bus
+ *      is used to communicate with said memory. Irregardless of the flash bank configurations, the address of the
+ *      OTP (accessed either through the AXIM or ITCM interfaces) will not change. This region also contains an
+ *      additional 16 bytes (which have been taken into consideration for the listed address range) used to lock
+ *      OTP data block.
  */
 
 /*! Note to future Nick regarding LMA and VMA for ITCM/AXIM flash.
@@ -39,12 +63,14 @@ ENTRY(Reset_Handler)
 
 MEMORY
 {
-	FLASH_AXIM (rwx) : ORIGIN = 0x08000000, LENGTH = 0x00200000 /*   2 MB */
-	FLASH_ITCM  (rx) : ORIGIN = 0x00200000, LENGTH = 0x00200000 /*   2 MB */
-	MAIN_SRAM (rw!x) : ORIGIN = 0x20020000, LENGTH = 0x0005C000 /* 368 kB */
-	AUX_SRAM  (rw!x) : ORIGIN = 0x2007C000, LENGTH = 0x00004000 /*  16 kB */
-	DTCM      (rw!x) : ORIGIN = 0x20000000, LENGTH = 0x00020000 /* 128 kB */
-	ITCM       (rwx) : ORIGIN = 0x00000000, LENGTH = 0x00004000 /*  16 kB */
+	FLASH_AXIM (rwx) : ORIGIN = 0x08000000, LENGTH = 0x00200000 /*    2 MB */
+	FLASH_ITCM  (rx) : ORIGIN = 0x00200000, LENGTH = 0x00200000 /*    2 MB */
+	OTP_AXIM     (r) : ORIGIN = 0x1FF0F000, LENGTH = 0x00000420 /* 1024  B */
+	OTP_ITCM     (r) : ORIGIN = 0x0010F000, LENGTH = 0x00000420 /* 1024  B */
+	AUX_SRAM  (rw!x) : ORIGIN = 0x2007C000, LENGTH = 0x00004000 /*   16 kB */
+	MAIN_SRAM (rw!x) : ORIGIN = 0x20020000, LENGTH = 0x0005C000 /*  368 kB */
+	DTCM      (rw!x) : ORIGIN = 0x20000000, LENGTH = 0x00020000 /*  128 kB */
+	ITCM       (rwx) : ORIGIN = 0x00000000, LENGTH = 0x00004000 /*   16 kB */
 }
 
 __STACK_SIZE = 0x000493E0; /* 300 kB */

@@ -60,16 +60,16 @@ typedef struct
 /*! GPIO peripheral declarations.
  */
 #define GPIOA ((GPIO_TypeDef *) GPIOA_BASE)
-#define GPIOB ((GPIO_TypeDef *) GPIOA_BASE)
-#define GPIOC ((GPIO_TypeDef *) GPIOA_BASE)
-#define GPIOD ((GPIO_TypeDef *) GPIOA_BASE)
-#define GPIOE ((GPIO_TypeDef *) GPIOA_BASE)
-#define GPIOF ((GPIO_TypeDef *) GPIOA_BASE)
-#define GPIOG ((GPIO_TypeDef *) GPIOA_BASE)
-#define GPIOH ((GPIO_TypeDef *) GPIOA_BASE)
-#define GPIOI ((GPIO_TypeDef *) GPIOA_BASE)
-#define GPIOJ ((GPIO_TypeDef *) GPIOA_BASE)
-#define GPIOK ((GPIO_TypeDef *) GPIOA_BASE)
+#define GPIOB ((GPIO_TypeDef *) GPIOB_BASE)
+#define GPIOC ((GPIO_TypeDef *) GPIOC_BASE)
+#define GPIOD ((GPIO_TypeDef *) GPIOD_BASE)
+#define GPIOE ((GPIO_TypeDef *) GPIOE_BASE)
+#define GPIOF ((GPIO_TypeDef *) GPIOF_BASE)
+#define GPIOG ((GPIO_TypeDef *) GPIOG_BASE)
+#define GPIOH ((GPIO_TypeDef *) GPIOH_BASE)
+#define GPIOI ((GPIO_TypeDef *) GPIOI_BASE)
+#define GPIOJ ((GPIO_TypeDef *) GPIOJ_BASE)
+#define GPIOK ((GPIO_TypeDef *) GPIOK_BASE)
 
 /*! End of section using anonymous unions.
  */
