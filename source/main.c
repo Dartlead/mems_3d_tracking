@@ -1,18 +1,18 @@
 #include "stm32f767zi.h"
 
-void __attribute__((section(".text.fast_text"), optimize("O0"))) delay(void)
-{
-	uint32_t i = 0;
-	while (i < 1000000) {
-		i++;
-	}
-}
+/*! FreeRTOS includes.
+ */
+#include "FreeRTOS.h"
+#include "task.h"
 
-void __attribute__((section(".text.fast_text"))) toggle_LED(void)
-{
+static void __attribute__((section(".text.fast_text"))) LED_toggle_task(void * parameter) {
+	TickType_t const delay_500ms    = pdMS_TO_TICKS(500UL);
+	TickType_t       last_wake_time = xTaskGetTickCount();
+
 	while (1) {
+		vTaskDelayUntil(&last_wake_time, delay_500ms);
+
 		GPIOB->ODR ^= (0x1UL << 7);
-		delay();
 	}
 }
 
@@ -22,7 +22,11 @@ int main(void)
 	RCC->AHB1ENR |= 0x1UL <<  1UL; //!# Enable clock to GPIO port B
 	GPIOB->MODER |= 0x1UL << 14UL; //!# Set PB7 to general purpose output mode
 
-	toggle_LED();
+	xTaskCreate(LED_toggle_task, "LED toggle", 500, NULL, 1, NULL);
+
+	vTaskStartScheduler();
+
+	while (1);
 	return 0;
 }
 

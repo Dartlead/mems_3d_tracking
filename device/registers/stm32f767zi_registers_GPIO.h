@@ -1,6 +1,8 @@
 #ifndef STM32F767ZI_REGISTERS_GPIO_H
 #define STM32F767ZI_REGISTERS_GPIO_H
 
+#include "stm32f767zi.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif

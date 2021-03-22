@@ -73,8 +73,14 @@ MEMORY
 	ITCM       (rwx) : ORIGIN = 0x00000000, LENGTH = 0x00004000 /*   16 kB */
 }
 
-__STACK_SIZE = 0x000493E0; /* 300 kB */
-__HEAP_SIZE  = 0x00010000; /*  64 kB */
+/*! Stack size declaration.
+ *
+ *  The heap size is not declared here because the heap is a statically allocated array declared within
+ *  startup_stm32f767zi.c (whose size is defined in FreeRTOSConfig.h).
+ *  Note that the main stack is so small because it is only needed for the startup logic and main(). The stacks of
+ *  all the FreeRTOS tasks (as well as the task's TCB structure) comes from the heap.
+ */
+__STACK_SIZE = 0x00004650; /* 18 kB */
 
 SECTIONS
 {
@@ -217,15 +223,25 @@ SECTIONS
 	} > DTCM /* VMA and LMA in DTCM */
 
 	/* ========================================================================================================== */
-	/* Heap                                                                                                       */
+	/* Dummy Heap                                                                                                 */
 	/* ========================================================================================================== */
-	.heap : ALIGN(4)
+	/*! The output section containing the statically allocated array representing the heap.
+	 *
+	 * @note  This section is marked as NOLOAD because in the OpenOCD configuration script for the stm32f767zi there
+	 *        are two flash banks declared (three if you include the virtual alias for the ITCM flash but that is
+	 *        not applicable for this note). The first of the two flash banks is the AXIM flash which is used for
+	 *        *normal* code. The second flash bank is the OTP flash which is used for *non-normal* one-time write
+	 *        code. When the GDB loader attempts to load the .elf the stm32f2x OpenOCD flash driver will infer which
+	 *        flash bank to load to based on the address of each linker script output section. If the dummy heap
+	 *        section is loaded OpenOCD will throw a warning because there is no flash bank at 0x2020 0000 (the
+	 *        start of the main SRAM region). The NOLOAD prevents this warning during flashing.
+	 */
+	.heap_dummy (NOLOAD) : ALIGN(4)
 	{
 		__heap_base = .;
 
-		. = . + __HEAP_SIZE;
+		KEEP(*(.heap))
 
-		. = ALIGN(4);
 		__heap_limit = .;
 	} > MAIN_SRAM /* VMA and LMA in main SRAM */
 
@@ -243,6 +259,9 @@ SECTIONS
 		__stack_top = .;
 		__stack_base = .;
 	} > MAIN_SRAM /* VMA and LMA in main SRAM */
+
+	/* Check if the heap + stack overflows the amount of space available in main SRAM */
+	ASSERT(((ORIGIN(MAIN_SRAM) + LENGTH(MAIN_SRAM)) > __stack_base), "region main SRAM overflowed")
 }
 
 /* EOF */

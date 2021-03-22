@@ -155,7 +155,9 @@ typedef enum IRQn
 /* ============================================================================================================= */
 /* Device Peripheral Access Layer                                                                                */
 /* ============================================================================================================= */
+#include "stm32f767zi_registers_FLASH.h"
 #include "stm32f767zi_registers_GPIO.h"
+#include "stm32f767zi_registers_PWR.h"
 #include "stm32f767zi_registers_RCC.h"
 
 #ifdef __cplusplus
