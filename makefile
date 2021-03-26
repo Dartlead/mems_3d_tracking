@@ -5,7 +5,6 @@
 # 'make clean' deletes all compilation outputs
 #
 
-# File paths for
 BIN_PATH = ~/Toolchains/gcc-arm-none-eabi-9-2019-q4-major/bin
 VFP_LIB_PATH = ~/Toolchains/gcc-arm-none-eabi-9-2019-q4-major/arm-none-eabi/lib/thumb/v7e-m+dp/hard
 
