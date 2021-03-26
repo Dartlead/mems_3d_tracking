@@ -2,5 +2,6 @@
 *.a
 *.map
 *.elf
+*.hex
 *.bin
 .DS_Store
