@@ -5,11 +5,14 @@
 # 'make clean' deletes all compilation outputs
 #
 
-BIN_PATH = ~/Toolchains/gcc-arm-none-eabi-9-2019-q4-major/bin
-VFP_LIB_PATH = ~/Toolchains/gcc-arm-none-eabi-9-2019-q4-major/arm-none-eabi/lib/thumb/v7e-m+dp/hard
+#BIN_PATH = ~/Toolchains/gcc-arm-none-eabi-9-2019-q4-major/bin
+#VFP_LIB_PATH = ~/Toolchains/gcc-arm-none-eabi-9-2019-q4-major/arm-none-eabi/lib/thumb/v7e-m+dp/hard
+BIN_PATH = ~/Toolchains/gcc-arm-none-eabi-10-2020-q4-major/bin
+VFP_LIB_PATH = ~/Toolchains/gcc-arm-none-eabi-10-2020-q4-major/arm-none-eabi/lib/thumb/v7e-m+dp/hard
 
 # Toolchain components
 CC = $(BIN_PATH)/arm-none-eabi-gcc
+#CC = $(BIN_PATH)/arm-none-eabi-g++
 AS = $(BIN_PATH)/arm-none-eabi-as
 LD = $(BIN_PATH)/arm-none-eabi-ld
 AR = $(BIN_PATH)/arm-none-eabi-ar
