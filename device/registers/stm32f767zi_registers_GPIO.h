@@ -43,7 +43,7 @@ typedef struct
 	__IO uint32_t BSRR;    //!# GPIO port bit set/reset register       | offset: 0x18
 	__IO uint32_t LCKR;    //!# GPIO port configuration lock register  | offset: 0x1C
 	__IO uint32_t AFR[2];  //!# GPIO port alternate function registers | offset: 0x20-0x24
-} GPIO_typedef;
+} GPIO_TypeDef;
 
 /*! GPIO address bases.
  */
@@ -61,17 +61,17 @@ typedef struct
 
 /*! GPIO peripheral declarations.
  */
-#define GPIOA ((GPIO_typedef *) GPIOA_BASE)
-#define GPIOB ((GPIO_typedef *) GPIOB_BASE)
-#define GPIOC ((GPIO_typedef *) GPIOC_BASE)
-#define GPIOD ((GPIO_typedef *) GPIOD_BASE)
-#define GPIOE ((GPIO_typedef *) GPIOE_BASE)
-#define GPIOF ((GPIO_typedef *) GPIOF_BASE)
-#define GPIOG ((GPIO_typedef *) GPIOG_BASE)
-#define GPIOH ((GPIO_typedef *) GPIOH_BASE)
-#define GPIOI ((GPIO_typedef *) GPIOI_BASE)
-#define GPIOJ ((GPIO_typedef *) GPIOJ_BASE)
-#define GPIOK ((GPIO_typedef *) GPIOK_BASE)
+#define GPIOA ((GPIO_TypeDef *) GPIOA_BASE)
+#define GPIOB ((GPIO_TypeDef *) GPIOB_BASE)
+#define GPIOC ((GPIO_TypeDef *) GPIOC_BASE)
+#define GPIOD ((GPIO_TypeDef *) GPIOD_BASE)
+#define GPIOE ((GPIO_TypeDef *) GPIOE_BASE)
+#define GPIOF ((GPIO_TypeDef *) GPIOF_BASE)
+#define GPIOG ((GPIO_TypeDef *) GPIOG_BASE)
+#define GPIOH ((GPIO_TypeDef *) GPIOH_BASE)
+#define GPIOI ((GPIO_TypeDef *) GPIOI_BASE)
+#define GPIOJ ((GPIO_TypeDef *) GPIOJ_BASE)
+#define GPIOK ((GPIO_TypeDef *) GPIOK_BASE)
 
 /*! End of section using anonymous unions.
  */

@@ -12,22 +12,6 @@ extern "C" {
 /* ============================================================================================================= */
 /*!
  */
-typedef enum GPIO_port {
-	  GPIO_port_A = 0
-	, GPIO_port_B = 1
-	, GPIO_port_C = 2
-	, GPIO_port_D = 3
-	, GPIO_port_E = 4
-	, GPIO_port_F = 5
-	, GPIO_port_G = 6
-	, GPIO_port_H = 7
-	, GPIO_port_I = 8
-	, GPIO_port_J = 9
-	, GPIO_port_K = 10
-} GPIO_port_typedef;
-
-/*!
- */
 typedef enum GPIO_mode {
 	  GPIO_mode_alt_func_0  = 0
 	, GPIO_mode_alt_func_1  = 1
@@ -48,14 +32,14 @@ typedef enum GPIO_mode {
 	, GPIO_mode_input       = 16
 	, GPIO_mode_output      = 17
 	, GPIO_mode_analog      = 18
-} GPIO_mode_typedef;
+} GPIO_mode_t;
 
 /*!
  */
 typedef enum GPIO_output_type {
 	  GPIO_output_type_push_pull  = 0
 	, GPIO_output_type_open_drain = 1
-} GPIO_output_type_typedef;
+} GPIO_output_type_t;
 
 /*!
  */
@@ -64,7 +48,7 @@ typedef enum GPIO_output_speed {
 	, GPIO_output_speed_medium    = 1
 	, GPIO_output_speed_high      = 2
 	, GPIO_output_speed_very_high = 3
-} GPIO_output_speed_typedef;
+} GPIO_output_speed_t;
 
 /*!
  */
@@ -72,7 +56,7 @@ typedef enum GPIO_pull {
 	  GPIO_pull_none = 0
 	, GPIO_pull_up   = 1
 	, GPIO_pull_down = 2
-} GPIO_pull_typedef;
+} GPIO_pull_t;
 
 /* ============================================================================================================= */
 /* GPIO Configuration Struct                                                                                     */
@@ -80,37 +64,68 @@ typedef enum GPIO_pull {
 /*!
  */
 typedef struct GPIO_config {
-	GPIO_port_typedef         GPIO_port;
-	GPIO_mode_typedef         GPIO_mode;
-	GPIO_output_type_typedef  GPIO_output_type;
-	GPIO_output_speed_typedef GPIO_output_speed;
-	GPIO_pull_typedef         GPIO_pull;
-} GPIO_config_struct;
+	GPIO_mode_t         GPIO_mode;
+	GPIO_output_type_t  GPIO_output_type;
+	GPIO_output_speed_t GPIO_output_speed;
+	GPIO_pull_t         GPIO_pull;
+} GPIO_config_t;
 
 /* ============================================================================================================= */
-/* GPIO Access Fucntions                                                                                         */
+/* GPIO Configuration Functions                                                                                  */
 /* ============================================================================================================= */
 /*!
  *
  */
-void GPIO_init(GPIO_typedef * const GPIOx
-	, GPIO_config_struct const * const config
+void GPIO_get_default_config(GPIO_config_t * const config);
+
+/*!
+ *
+ */
+void GPIO_init(GPIO_TypeDef * const GPIOx
+	, uint32_t const pin
+	, GPIO_config_t const * const config
 );
 
 /*!
  *
  */
-void GPIO_set_mode(GPIO_typedef * const GPIOx
+void GPIO_set_mode(GPIO_TypeDef * const GPIOx
 	, uint32_t const pin
-	, GPIO_mode_typedef const mode
+	, GPIO_mode_t const mode
 );
 
 /*!
  *
  */
-void GPIO_set_pull(GPIO_typedef * const GPIOx
+void GPIO_set_output_type(GPIO_TypeDef * const GPIOx
 	, uint32_t const pin
-	, GPIO_pull_typedef const pull
+	, GPIO_output_type_t const output_type
+);
+
+/*!
+ *
+ */
+void GPIO_set_output_speed(GPIO_TypeDef * const GPIOx
+	, uint32_t const pin
+	, GPIO_output_speed_t const output_speed
+);
+
+/*!
+ *
+ */
+void GPIO_set_pull(GPIO_TypeDef * const GPIOx
+	, uint32_t const pin
+	, GPIO_pull_t const pull
+);
+
+/* ============================================================================================================= */
+/* GPIO Access Functions                                                                                         */
+/* ============================================================================================================= */
+/*!
+ *
+ */
+void GPIO_toggle(GPIO_TypeDef * const GPIOx
+	, uint32_t const pin
 );
 
 //read, write, toggle, lock, is_locked

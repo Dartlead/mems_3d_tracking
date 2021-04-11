@@ -41,7 +41,7 @@ typedef struct
 	__IO uint32_t CR;      //!# FLASH control register        | offset: 0x10
 	__IO uint32_t OPTCR;   //!# FLASH option control register | offset: 0x14
 	__IO uint32_t OPTCR1;  //!# FLASH option control register | offset: 0x018
-} FLASH_typedef;
+} FLASH_TypeDef;
 
 /*! FLASH address base.
  */
@@ -49,7 +49,7 @@ typedef struct
 
 /*! FLASH peripheral declaration.
  */
-#define FLASH ((FLASH_typedef *) FLASH_BASE)
+#define FLASH ((FLASH_TypeDef *) FLASH_BASE)
 
 /*! End of section using anonymous unions.
  */

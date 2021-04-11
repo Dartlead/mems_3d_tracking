@@ -3,24 +3,68 @@
 #include "FreeRTOS.h"
 
 /* ============================================================================================================= */
-/* GPIO Access Fucntions                                                                                         */
+/* GPIO Configuration Functions                                                                                  */
 /* ============================================================================================================= */
 /*!
  *
  */
-void GPIO_init(GPIO_typedef * const GPIOx
-	, GPIO_config_struct const * const config
-) {
-	return;
+void GPIO_get_default_config(GPIO_config_t * const config) {
+	config->GPIO_mode         = GPIO_mode_output;
+	config->GPIO_output_type  = GPIO_output_type_push_pull;
+	config->GPIO_output_speed = GPIO_output_speed_low;
+	config->GPIO_pull         = GPIO_pull_none;
 }
 
 /*!
  *
  */
-void GPIO_set_mode(GPIO_typedef * const GPIOx
+void GPIO_init(GPIO_TypeDef * const GPIOx
 	, uint32_t const pin
-	, GPIO_mode_typedef const mode
+	, GPIO_config_t const * const config
 ) {
+	/* Enable the clock to the GPIO port */
+	if (GPIOx == GPIOA) {
+		RCC->AHB1ENR |= 0x1UL;
+	} else if (GPIOx == GPIOB) {
+		RCC->AHB1ENR |= 0x1UL << 1;
+	} else if (GPIOx == GPIOC) {
+		RCC->AHB1ENR |= 0x1UL << 2;
+	} else if (GPIOx == GPIOD) {
+		RCC->AHB1ENR |= 0x1UL << 3;
+	} else if (GPIOx == GPIOE) {
+		RCC->AHB1ENR |= 0x1UL << 4;
+	} else if (GPIOx == GPIOF) {
+		RCC->AHB1ENR |= 0x1UL << 5;
+	} else if (GPIOx == GPIOG) {
+		RCC->AHB1ENR |= 0x1UL << 6;
+	} else if (GPIOx == GPIOH) {
+		RCC->AHB1ENR |= 0x1UL << 7;
+	} else if (GPIOx == GPIOI) {
+		RCC->AHB1ENR |= 0x1UL << 8;
+	} else if (GPIOx == GPIOJ) {
+		RCC->AHB1ENR |= 0x1UL << 9;
+	} else if (GPIOx == GPIOK) {
+		RCC->AHB1ENR |= 0x1UL << 10;
+	} else {
+		configASSERT(0);
+	}
+
+	GPIO_set_mode(GPIOx, pin, config->GPIO_mode);
+	GPIO_set_output_type(GPIOx, pin, config->GPIO_output_type);
+	GPIO_set_output_speed(GPIOx, pin, config->GPIO_output_speed);
+	GPIO_set_pull(GPIOx, pin, config->GPIO_pull);
+}
+
+/*!
+ *
+ * @note  The alternate function (AFRL/H) MUST be set before the mode (MODER) otherwise there will be glitches on
+ *        output line.
+ */
+void GPIO_set_mode(GPIO_TypeDef * const GPIOx
+	, uint32_t const pin
+	, GPIO_mode_t const mode
+) {
+	configASSERT(GPIOx != NULL);
 	configASSERT(pin <= 16);
 	configASSERT((mode >= GPIO_mode_alt_func_0) && (mode <= GPIO_mode_alt_func_15));
 
@@ -49,9 +93,9 @@ void GPIO_set_mode(GPIO_typedef * const GPIOx
 
 			/* Mux the appropriate alternate function via AFR registers */
 			if (pin <= 8) {
-				GPIOx->AFR[0] = ((GPIOx->AFR[0]) & (~AFR_AFSEL_clear_mask)) | (AFR_AFSEL_mask);
+				GPIOx->AFR[0] = (GPIOx->AFR[0] & ~AFR_AFSEL_clear_mask) | AFR_AFSEL_mask;
 			} else {
-				GPIOx->AFR[1] = ((GPIOx->AFR[1]) & (~AFR_AFSEL_clear_mask)) | (AFR_AFSEL_mask);
+				GPIOx->AFR[1] = (GPIOx->AFR[1] & ~AFR_AFSEL_clear_mask) | AFR_AFSEL_mask;
 			}
 
 			/* Change MODE to alternate function */
@@ -71,6 +115,99 @@ void GPIO_set_mode(GPIO_typedef * const GPIOx
 			configASSERT(0);
 			break;
 	}
+}
+
+/*!
+ *
+ */
+void GPIO_set_output_type(GPIO_TypeDef * const GPIOx
+	, uint32_t const pin
+	, GPIO_output_type_t const output_type
+) {
+	configASSERT(GPIOx != NULL);
+	configASSERT(pin <= 16);
+	configASSERT((output_type >= GPIO_output_type_push_pull) && (output_type <= GPIO_output_type_open_drain));
+
+	switch (output_type) {
+		case GPIO_output_type_push_pull:
+			GPIOx->OTYPER &= ~(0x1UL << (pin - 1));
+			break;
+		case GPIO_output_type_open_drain:
+			GPIOx->OTYPER |= 0x1UL << (pin - 1);
+			break;
+		default:
+			configASSERT(0);
+			break;
+	}
+}
+
+/*!
+ *
+ */
+void GPIO_set_output_speed(GPIO_TypeDef * const GPIOx
+	, uint32_t const pin
+	, GPIO_output_speed_t const output_speed
+) {
+	configASSERT(GPIOx != NULL);
+	configASSERT(pin <= 16);
+	configASSERT((output_speed >= GPIO_output_speed_low) && (output_speed <= GPIO_output_speed_very_high));
+
+	switch (output_speed) {
+		case GPIO_output_speed_low:
+			GPIOx->OSPEEDR &= ~(0x3UL << ((pin - 1) * 2));
+			break;
+		case GPIO_output_speed_medium:
+			GPIOx->OSPEEDR = (GPIOx->OSPEEDR & ~(0x3UL << ((pin - 1) * 2))) | (0x1UL << ((pin - 1) * 2));
+			break;
+		case GPIO_output_speed_high:
+			GPIOx->OSPEEDR = (GPIOx->OSPEEDR & ~(0x3UL << ((pin - 1) * 2))) | (0x2UL << ((pin - 1) * 2));
+			break;
+		case GPIO_output_speed_very_high:
+			GPIOx->OSPEEDR |= 0x3UL << ((pin - 1) * 2);
+			break;
+		default:
+			configASSERT(0);
+			break;
+	}
+}
+
+/*!
+ *
+ */
+void GPIO_set_pull(GPIO_TypeDef * const GPIOx
+	, uint32_t const pin
+	, GPIO_pull_t const pull
+) {
+	configASSERT(GPIOx != NULL);
+	configASSERT(pin <= 16);
+	configASSERT((pull >= GPIO_pull_none) && (pull <= GPIO_pull_down));
+
+	switch (pull) {
+		case GPIO_pull_none:
+			GPIOx->PUPDR &= ~(0x3UL << ((pin - 1) * 2));
+			break;
+		case GPIO_pull_up:
+			GPIOx->PUPDR = (GPIOx->PUPDR & ~(0x3UL << ((pin - 1) * 2))) | (0x1UL << ((pin - 1) * 2));
+			break;
+		case GPIO_pull_down:
+			GPIOx->PUPDR = (GPIOx->PUPDR & ~(0x3UL << ((pin - 1) * 2))) | (0x2UL << ((pin - 1) * 2));
+			break;
+		default:
+			configASSERT(0);
+			break;
+	}
+}
+
+/* ============================================================================================================= */
+/* GPIO Access Functions                                                                                         */
+/* ============================================================================================================= */
+/*!
+ *
+ */
+void GPIO_toggle(GPIO_TypeDef * const GPIOx
+	, uint32_t const pin
+) {
+	GPIOx->ODR ^= 0x1UL << (pin - 1);
 }
 
 /* EOF */
