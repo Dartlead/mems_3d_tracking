@@ -67,7 +67,7 @@ typedef struct
 	__IO uint32_t PLLSAICFGR;   //!# RCC PLLSAI configuration register                           | offset: 0x88
 	__IO uint32_t DCKCFGR1;     //!# RCC Dedicated Clocks configuration register 1               | offset: 0x8C
 	__IO uint32_t DCKCFGR2;     //!# RCC Dedicated Clocks configuration register 2               | offset: 0x90
-} RCC_TypeDef;
+} RCC_typedef;
 
 /*! RCC address base.
  */
@@ -75,7 +75,7 @@ typedef struct
 
 /*! RCC peripheral declaration.
  */
-#define RCC ((RCC_TypeDef *) RCC_BASE)
+#define RCC ((RCC_typedef *) RCC_BASE)
 
 /*! End of section using anonymous unions.
  */

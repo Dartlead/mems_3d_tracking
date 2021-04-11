@@ -38,7 +38,7 @@ typedef struct
 	__IO uint32_t CSR1; //!# PWR control/status register 1 | offset: 0x04
 	__IO uint32_t CR2;  //!# PWR control register 2        | offset: 0x08
 	__IO uint32_t CSR2; //!# PWR control/status register 2 | offset: 0x0C
-} PWR_TypeDef;
+} PWR_typedef;
 
 /*! PWR address base.
  */
@@ -46,7 +46,7 @@ typedef struct
 
 /*! PWR peripheral declaration.
  */
-#define PWR ((PWR_TypeDef *) PWR_BASE)
+#define PWR ((PWR_typedef *) PWR_BASE)
 
 /*! End of section using anonymous unions.
  */

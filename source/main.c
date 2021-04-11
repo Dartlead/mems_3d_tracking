@@ -5,6 +5,10 @@
 #include "FreeRTOS.h"
 #include "task.h"
 
+/*! STM32F767ZI includes.
+ */
+#include "driver_GPIO.h"
+
 static void __attribute__((section(".text.fast_text"))) LED_toggle_task(void * parameter) {
 	TickType_t const delay_500ms    = pdMS_TO_TICKS(500UL);
 	TickType_t       last_wake_time = xTaskGetTickCount();

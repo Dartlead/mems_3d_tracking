@@ -147,7 +147,7 @@
 //	#include <assert.h>
 //	#define configASSERT( x ) assert( ( x ) )
 //#else
-	#define configASSERT( x ) if ( !( x ) ) { taskDISABLE_INTERRUPTS(); for ( ;; ); }
+	#define configASSERT( x ) if ( !( x ) ) { portDISABLE_INTERRUPTS(); for ( ;; ); }
 //#endif /* __GNUC__ */
 
 #endif /* FREERTOS_CONFIG_H */

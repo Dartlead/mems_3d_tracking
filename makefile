@@ -5,14 +5,11 @@
 # 'make clean' deletes all compilation outputs
 #
 
-#BIN_PATH = ~/Toolchains/gcc-arm-none-eabi-9-2019-q4-major/bin
-#VFP_LIB_PATH = ~/Toolchains/gcc-arm-none-eabi-9-2019-q4-major/arm-none-eabi/lib/thumb/v7e-m+dp/hard
-BIN_PATH = ~/Toolchains/gcc-arm-none-eabi-10-2020-q4-major/bin
-VFP_LIB_PATH = ~/Toolchains/gcc-arm-none-eabi-10-2020-q4-major/arm-none-eabi/lib/thumb/v7e-m+dp/hard
+BIN_PATH = ~/toolchains/gcc-arm-none-eabi-10-2020-q4-major/bin
+VFP_LIB_PATH = ~/toolchains/gcc-arm-none-eabi-10-2020-q4-major/arm-none-eabi/lib/thumb/v7e-m+dp/hard
 
 # Toolchain components
 CC = $(BIN_PATH)/arm-none-eabi-gcc
-#CC = $(BIN_PATH)/arm-none-eabi-g++
 AS = $(BIN_PATH)/arm-none-eabi-as
 LD = $(BIN_PATH)/arm-none-eabi-ld
 AR = $(BIN_PATH)/arm-none-eabi-ar
@@ -77,7 +74,8 @@ C_FLAGS += \
 	-I freertos/source/include/ \
 	-I freertos/source/portable/GCC/ARM_CM7/r0p1/ \
 	-I freertos/source/portable/MemMang/ \
-	-I source/
+	-I source/ \
+	-I source/drivers/include
 
 # =================================================================================================================
 # Linker Flags
@@ -104,13 +102,15 @@ LD_LIBS += \
 # =================================================================================================================
 SOURCES = \
 	port.c heap_4.c croutine.c event_groups.c \
-	list.c queue.c stream_buffer.c tasks.c timers.c \
-	startup_stm32f767zi.c system_stm32f767zi.c main.c
+	list.c queue.c stream_buffer.c tasks.c \
+	timers.c startup_stm32f767zi.c system_stm32f767zi.c main.c \
+	driver_GPIO.c
 
 OBJECTS = \
 	output/port.o output/heap_4.o output/croutine.o output/event_groups.o \
-	output/list.o output/queue.o output/stream_buffer.o output/tasks.o output/timers.o \
-	output/startup_stm32f767zi.o output/system_stm32f767zi.o output/main.o
+	output/list.o output/queue.o output/stream_buffer.o output/tasks.o \
+	output/timers.o output/startup_stm32f767zi.o output/system_stm32f767zi.o output/main.o \
+	output/driver_GPIO.o
 
 # =================================================================================================================
 # Rules
@@ -167,4 +167,6 @@ output/startup_stm32f767zi.o : startup/startup_stm32f767zi.c
 output/system_stm32f767zi.o : device/system_stm32f767zi.c
 	@$(CC) $(C_FLAGS) -c $< -o $@
 output/main.o : source/main.c
+	@$(CC) $(C_FLAGS) -c $< -o $@
+output/driver_GPIO.o : source/drivers/src/driver_GPIO.c
 	@$(CC) $(C_FLAGS) -c $< -o $@
