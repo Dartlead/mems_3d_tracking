@@ -148,7 +148,7 @@
 #define configASSERT( EXPR ) \
 	do { \
 		if (!(EXPR)) { \
-			taskDISABLE_INTERRUPTS(); \
+			portDISABLE_INTERRUPTS(); \
 			dartlead_assert(); \
 		} \
 	} while (0)

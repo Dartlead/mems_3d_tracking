@@ -128,7 +128,7 @@ void GPIO_toggle(GPIO_TypeDef * const GPIOx
 	, uint32_t const pin
 );
 
-//read, write, toggle, lock, is_locked
+//read, write, lock, is_locked
 
 #ifdef __cplusplus
 }
