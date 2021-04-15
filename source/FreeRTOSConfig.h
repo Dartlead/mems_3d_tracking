@@ -36,6 +36,8 @@
 
 #include <stddef.h>
 
+#include "dartlead_assert.h"
+
 /*-----------------------------------------------------------
  * Application specific definitions.
  *
@@ -143,12 +145,15 @@
 #define xPortSysTickHandler                          SysTick_Handler
 
 /* Assert definition */
-//#if defined(__GNUC__)
-//	#include <assert.h>
-//	#define configASSERT( x ) assert( ( x ) )
-//#else
-	#define configASSERT( x ) if ( !( x ) ) { taskDISABLE_INTERRUPTS(); for ( ;; ); }
-//#endif /* __GNUC__ */
+#define configASSERT( EXPR ) \
+	do { \
+		if (!(EXPR)) { \
+			taskDISABLE_INTERRUPTS(); \
+			dartlead_assert(); \
+		} \
+	} while (0)
+
+#define WTF configASSERT(0)
 
 #endif /* FREERTOS_CONFIG_H */
 

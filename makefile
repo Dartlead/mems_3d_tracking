@@ -74,7 +74,8 @@ C_FLAGS += \
 	-I freertos/source/include/ \
 	-I freertos/source/portable/GCC/ARM_CM7/r0p1/ \
 	-I freertos/source/portable/MemMang/ \
-	-I source/
+	-I source/ \
+	-I source/drivers/inc
 
 # =================================================================================================================
 # Linker Flags
@@ -101,13 +102,15 @@ LD_LIBS += \
 # =================================================================================================================
 SOURCES = \
 	port.c heap_4.c croutine.c event_groups.c \
-	list.c queue.c stream_buffer.c tasks.c timers.c \
-	startup_stm32f767zi.c system_stm32f767zi.c main.c
+	list.c queue.c stream_buffer.c tasks.c \
+	timers.c startup_stm32f767zi.c system_stm32f767zi.c main.c \
+	dartlead_assert.c
 
 OBJECTS = \
 	output/port.o output/heap_4.o output/croutine.o output/event_groups.o \
-	output/list.o output/queue.o output/stream_buffer.o output/tasks.o output/timers.o \
-	output/startup_stm32f767zi.o output/system_stm32f767zi.o output/main.o
+	output/list.o output/queue.o output/stream_buffer.o output/tasks.o \
+	output/timers.o output/startup_stm32f767zi.o output/system_stm32f767zi.o output/main.o \
+	output/dartlead_assert.o
 
 # =================================================================================================================
 # Rules
@@ -164,4 +167,6 @@ output/startup_stm32f767zi.o : startup/startup_stm32f767zi.c
 output/system_stm32f767zi.o : device/system_stm32f767zi.c
 	@$(CC) $(C_FLAGS) -c $< -o $@
 output/main.o : source/main.c
+	@$(CC) $(C_FLAGS) -c $< -o $@
+output/dartlead_assert.o : source/drivers/src/dartlead_assert.c
 	@$(CC) $(C_FLAGS) -c $< -o $@
