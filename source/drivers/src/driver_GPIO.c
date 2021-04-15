@@ -66,7 +66,7 @@ void GPIO_set_mode(GPIO_TypeDef * const GPIOx
 ) {
 	configASSERT(GPIOx != NULL);
 	configASSERT(pin <= 16);
-	configASSERT((mode >= GPIO_mode_alt_func_0) && (mode <= GPIO_mode_alt_func_15));
+	configASSERT((mode >= GPIO_mode_alt_func_0) && (mode <= GPIO_mode_analog));
 
 	uint32_t AFR_AFSEL_clear_mask = 0; //!# Bit mask to clear a single AFRl/H AFSELy field
 	uint32_t AFR_AFSEL_mask       = 0; //!# Bit mask to set the requested pin's AFRL/H AFSELy field
