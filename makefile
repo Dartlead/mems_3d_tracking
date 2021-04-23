@@ -83,7 +83,7 @@ C_FLAGS += \
 LD_FLAGS = \
 	-T linker_script/default.ld \
 	-nostartfiles \
-	-Map linker_map.map \
+	-Map output/linker_map.map \
 	-print-memory-usage
 
 LD_FLAGS += \
@@ -120,18 +120,21 @@ OBJECTS = \
 all: dartlead.elf dartlead.hex dartlead.bin
 
 dartlead.elf : $(OBJECTS)
-	@$(LD) $(LD_FLAGS) $^ $(LD_LIBS) -o $@
+	@$(LD) $(LD_FLAGS) $^ $(LD_LIBS) -o bin/dartlead.elf
 
-dartlead.hex : dartlead.elf
-	@$(OBJCOPY) -O ihex $^ $@
+dartlead.hex : bin/dartlead.elf
+	@$(OBJCOPY) -O ihex $^ bin/dartlead.hex
 
-dartlead.bin : dartlead.elf
-	@$(OBJCOPY) -O binary $^ $@
+dartlead.bin : bin/dartlead.elf
+	@$(OBJCOPY) -O binary $^ bin/dartlead.bin
 
 clean:
 	-@rm -f output/*.o
+	-@rm -f output/*.map
+	-@rm -f bin/*.elf
+	-@rm -f bin/*.hex
+	-@rm -f bin/*.bin
 	-@rm -f *.a
-	-@rm -f *.map
 	-@rm -f *.elf
 	-@rm -f *.hex
 	-@rm -f *.bin
