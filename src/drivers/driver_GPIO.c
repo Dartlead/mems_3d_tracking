@@ -217,14 +217,14 @@ void GPIO_set_pull(GPIO_TypeDef * const GPIOx
  * @note  The lock sequence is wrapped in a FreeRTOS critical section b/c during the lock sequence the value of
  *        LCKR[15:0] must not change. Thus whichever task calls this function cannot be context swapped out of.
  */
-void __attribute__((optimize("O0"))) GPIO_lock_pin(GPIO_TypeDef * const GPIOx
+bool __attribute__((optimize("O0"))) GPIO_lock_pin(GPIO_TypeDef * const GPIOx
 	, uint32_t const pin
 ) {
 	configASSERT(GPIOx != NULL);
 	configASSERT(pin <= GPIO_MAX_PIN_NUM);
 
-	bool           locked    = false;
-	uint32_t const LCKR_15_0 = (GPIOx->LCKR & 0xFFFFUL) | (0x1UL << pin);
+	bool     locked    = false;
+	uint32_t LCKR_15_0 = (GPIOx->LCKR & 0xFFFFUL) | (0x1UL << pin);
 
 	taskENTER_CRITICAL();
 

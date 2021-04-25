@@ -74,8 +74,8 @@ C_FLAGS += \
 	-I freertos/source/include/ \
 	-I freertos/source/portable/GCC/ARM_CM7/r0p1/ \
 	-I freertos/source/portable/MemMang/ \
-	-I source/ \
-	-I source/drivers/inc
+	-I src/ \
+	-I src/drivers/
 
 # =================================================================================================================
 # Linker Flags
@@ -134,10 +134,6 @@ clean:
 	-@rm -f bin/*.elf
 	-@rm -f bin/*.hex
 	-@rm -f bin/*.bin
-	-@rm -f *.a
-	-@rm -f *.elf
-	-@rm -f *.hex
-	-@rm -f *.bin
 
 # =================================================================================================================
 # FreeRTOS File Rules
@@ -169,9 +165,9 @@ output/startup_stm32f767zi.o : startup/startup_stm32f767zi.c
 	@$(CC) $(C_FLAGS) -c $< -o $@
 output/system_stm32f767zi.o : device/system_stm32f767zi.c
 	@$(CC) $(C_FLAGS) -c $< -o $@
-output/main.o : source/main.c
+output/main.o : src/main.c
 	@$(CC) $(C_FLAGS) -c $< -o $@
-output/dartlead_assert.o : source/drivers/src/dartlead_assert.c
+output/dartlead_assert.o : src/drivers/dartlead_assert.c
 	@$(CC) $(C_FLAGS) -c $< -o $@
-output/driver_GPIO.o : source/drivers/src/driver_GPIO.c
+output/driver_GPIO.o : src/drivers/driver_GPIO.c
 	@$(CC) $(C_FLAGS) -c $< -o $@
