@@ -1,13 +1,14 @@
 #include "driver_GPIO.h"
 
 #include "FreeRTOS.h"
+#include "task.h"
 
-#define GPIO_MAX_PIN_NUM 15
+#define GPIO_MAX_PIN_NUM 15U
 
 /* ============================================================================================================= */
 /* GPIO Configuration Functions                                                                                  */
 /* ============================================================================================================= */
-/*!
+/*! Gets the default configuration for a GPIO pin.
  *
  */
 void GPIO_get_default_config(GPIO_config_t * const config) {
@@ -17,14 +18,14 @@ void GPIO_get_default_config(GPIO_config_t * const config) {
 	config->GPIO_pull         = GPIO_pull_none;
 }
 
-/*!
+/*! Initializes a GPIO pin.
  *
  */
 void GPIO_init(GPIO_TypeDef * const GPIOx
 	, uint32_t const pin
 	, GPIO_config_t const * const config
 ) {
-	/* Enable the clock to the GPIO port */
+	/* Enable the peripheral clock to the GPIO port */
 	if (GPIOx == GPIOA) {
 		RCC->AHB1ENR |= 0x1UL;
 	} else if (GPIOx == GPIOB) {
@@ -57,7 +58,7 @@ void GPIO_init(GPIO_TypeDef * const GPIOx
 	GPIO_set_pull(GPIOx, pin, config->GPIO_pull);
 }
 
-/*!
+/*! Sets the mode of the GPIO pin.
  *
  * @note  The alternate function (AFRL/H) MUST be set before the mode (MODER) otherwise there will be glitches on
  *        output line.
@@ -119,7 +120,7 @@ void GPIO_set_mode(GPIO_TypeDef * const GPIOx
 	}
 }
 
-/*!
+/*! Sets the output type of the GPIO pin.
  *
  */
 void GPIO_set_output_type(GPIO_TypeDef * const GPIOx
@@ -143,7 +144,7 @@ void GPIO_set_output_type(GPIO_TypeDef * const GPIOx
 	}
 }
 
-/*!
+/*! Sets the output speed of the GPIO pin.
  *
  */
 void GPIO_set_output_speed(GPIO_TypeDef * const GPIOx
@@ -173,7 +174,7 @@ void GPIO_set_output_speed(GPIO_TypeDef * const GPIOx
 	}
 }
 
-/*!
+/*! Sets the pin pull of the GPIO pin.
  *
  */
 void GPIO_set_pull(GPIO_TypeDef * const GPIOx
@@ -200,10 +201,131 @@ void GPIO_set_pull(GPIO_TypeDef * const GPIOx
 	}
 }
 
+/*! Locks a GPIO pin's configuration.
+ *
+ * @note  The lock sequence is as follows (where LCKR[15:0] contains a '1' in the bit position corresponding to
+ *        pin number being locked):
+ *        (1) Write LCKR[16] = '1' + LCKR[15:0]
+ *        (2) Write LCKR[16] = '0' + LCKR[15:0]
+ *        (3) Write LCKR[16] = '1`' + LCKR[15:0]
+ *        (4) Read LCKR
+ *        (5) Optionally read LCKR to verify LCKR[16] == 1 (confirms that the LOCK is active)
+ * @note  The lock sequence can only be performed using word access to the GPIOx_LCKR register due to the fact that
+ *        GPIOx_LCKR bit 16 has to be set at the same time as the [15:0] bits.
+ * @note  This function is forcibly optimized at -O0 to ensure that the correct lock sequence is respected and not
+ *        optimized out.
+ * @note  The lock sequence is wrapped in a FreeRTOS critical section b/c during the lock sequence the value of
+ *        LCKR[15:0] must not change. Thus whichever task calls this function cannot be context swapped out of.
+ */
+void __attribute__((optimize("O0"))) GPIO_lock_pin(GPIO_TypeDef * const GPIOx
+	, uint32_t const pin
+) {
+	configASSERT(GPIOx != NULL);
+	configASSERT(pin <= GPIO_MAX_PIN_NUM);
+
+	bool           locked    = false;
+	uint32_t const LCKR_15_0 = (GPIOx->LCKR & 0xFFFFUL) | (0x1UL << pin);
+
+	taskENTER_CRITICAL();
+
+	/* LOCK write sequence */
+	GPIOx->LCKR = 0x10000UL | LCKR_15_0;
+	GPIOx->LCKR = LCKR_15_0;
+	GPIOx->LCKR = 0x10000UL | LCKR_15_0;
+	LCKR_15_0 = GPIOx->LCKR;
+	LCKR_15_0 = GPIOx->LCKR;
+
+	taskEXIT_CRITICAL();
+
+	if ((LCKR_15_0 & (0x1UL << 16)) && (LCKR_15_0 & (0x1UL << pin))) {
+		locked = true;
+	} else {
+		locked = false;
+	}
+
+	return locked;
+}
+
+/*! Checks if a GPIO pin is locked.
+ *
+ */
+bool GPIO_is_pin_locked(GPIO_TypeDef * const GPIOx
+	, uint32_t const pin
+) {
+	configASSERT(GPIOx != NULL);
+	configASSERT(pin <= GPIO_MAX_PIN_NUM);
+
+	bool locked = false;
+
+	if ((GPIOx->LCKR & (0x1UL << 16)) && (GPIOx->LCKR & (0x1UL << pin))) {
+		locked = true;
+	} else {
+		locked = false;
+	}
+
+	return locked;
+}
+
 /* ============================================================================================================= */
 /* GPIO Access Functions                                                                                         */
 /* ============================================================================================================= */
-/*!
+/*! Writes to a GPIO output pin.
+ *
+ */
+void GPIO_write(GPIO_TypeDef * const GPIOx
+	, uint32_t const pin
+	, uint32_t const val
+) {
+	configASSERT(GPIOx != NULL);
+	configASSERT(pin <= GPIO_MAX_PIN_NUM);
+
+	if (val) {
+		GPIOx->ODR |= 0x1UL << pin;
+	} else {
+		GPIOx->ODR &= ~(0x1UL << pin);
+	}
+}
+
+/*! Atomically writes to a GPIO output pin.
+ *
+ */
+void GPIO_write_atomic(GPIO_TypeDef * const GPIOx
+	, uint32_t const pin
+	, uint32_t const val
+) {
+	configASSERT(GPIOx != NULL);
+	configASSERT(pin <= GPIO_MAX_PIN_NUM);
+
+	uint32_t const clr_bit_offset = 16;
+
+	if (val) {
+		GPIOx->BSRR |= 0x1UL << pin;
+	} else {
+		GPIOx->BSRR |= 0x1UL << (pin + clr_bit_offset);
+	}
+}
+
+/*! Reads from a GPIO input pin.
+ *
+ */
+uint32_t GPIO_read(GPIO_TypeDef * const GPIOx
+	, uint32_t const pin
+) {
+	configASSERT(GPIOx != NULL);
+	configASSERT(pin <= GPIO_MAX_PIN_NUM);
+
+	uint32_t val = 0;
+
+	if (GPIOx->IDR & (0x1UL << pin)) {
+		val = 1;
+	} else {
+		val = 0;
+	}
+
+	return val;
+}
+
+/*! Toggles a GPIO output pin.
  *
  */
 void GPIO_toggle(GPIO_TypeDef * const GPIOx
