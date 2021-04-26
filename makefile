@@ -5,8 +5,8 @@
 # 'make clean' deletes all compilation outputs
 #
 
-BIN_PATH = ~/Toolchains/gcc-arm-none-eabi-9-2019-q4-major/bin
-VFP_LIB_PATH = ~/Toolchains/gcc-arm-none-eabi-9-2019-q4-major/arm-none-eabi/lib/thumb/v7e-m+dp/hard
+BIN_PATH = ~/toolchains/gcc-arm-none-eabi-10-2020-q4-major/bin
+VFP_LIB_PATH = ~/toolchains/gcc-arm-none-eabi-10-2020-q4-major/arm-none-eabi/lib/thumb/v7e-m+dp/hard
 
 # Toolchain components
 CC = $(BIN_PATH)/arm-none-eabi-gcc
@@ -74,8 +74,8 @@ C_FLAGS += \
 	-I freertos/source/include/ \
 	-I freertos/source/portable/GCC/ARM_CM7/r0p1/ \
 	-I freertos/source/portable/MemMang/ \
-	-I source/ \
-	-I source/drivers/inc
+	-I src/ \
+	-I src/drivers/
 
 # =================================================================================================================
 # Linker Flags
@@ -83,7 +83,7 @@ C_FLAGS += \
 LD_FLAGS = \
 	-T linker_script/default.ld \
 	-nostartfiles \
-	-Map linker_map.map \
+	-Map output/linker_map.map \
 	-print-memory-usage
 
 LD_FLAGS += \
@@ -104,13 +104,13 @@ SOURCES = \
 	port.c heap_4.c croutine.c event_groups.c \
 	list.c queue.c stream_buffer.c tasks.c \
 	timers.c startup_stm32f767zi.c system_stm32f767zi.c main.c \
-	dartlead_assert.c
+	dartlead_assert.c driver_GPIO.c
 
 OBJECTS = \
 	output/port.o output/heap_4.o output/croutine.o output/event_groups.o \
 	output/list.o output/queue.o output/stream_buffer.o output/tasks.o \
 	output/timers.o output/startup_stm32f767zi.o output/system_stm32f767zi.o output/main.o \
-	output/dartlead_assert.o
+	output/dartlead_assert.o output/driver_GPIO.o
 
 # =================================================================================================================
 # Rules
@@ -120,21 +120,20 @@ OBJECTS = \
 all: dartlead.elf dartlead.hex dartlead.bin
 
 dartlead.elf : $(OBJECTS)
-	@$(LD) $(LD_FLAGS) $^ $(LD_LIBS) -o $@
+	@$(LD) $(LD_FLAGS) $^ $(LD_LIBS) -o bin/dartlead.elf
 
-dartlead.hex : dartlead.elf
-	@$(OBJCOPY) -O ihex $^ $@
+dartlead.hex : bin/dartlead.elf
+	@$(OBJCOPY) -O ihex $^ bin/dartlead.hex
 
-dartlead.bin : dartlead.elf
-	@$(OBJCOPY) -O binary $^ $@
+dartlead.bin : bin/dartlead.elf
+	@$(OBJCOPY) -O binary $^ bin/dartlead.bin
 
 clean:
 	-@rm -f output/*.o
-	-@rm -f *.a
-	-@rm -f *.map
-	-@rm -f *.elf
-	-@rm -f *.hex
-	-@rm -f *.bin
+	-@rm -f output/*.map
+	-@rm -f bin/*.elf
+	-@rm -f bin/*.hex
+	-@rm -f bin/*.bin
 
 # =================================================================================================================
 # FreeRTOS File Rules
@@ -166,7 +165,9 @@ output/startup_stm32f767zi.o : startup/startup_stm32f767zi.c
 	@$(CC) $(C_FLAGS) -c $< -o $@
 output/system_stm32f767zi.o : device/system_stm32f767zi.c
 	@$(CC) $(C_FLAGS) -c $< -o $@
-output/main.o : source/main.c
+output/main.o : src/main.c
 	@$(CC) $(C_FLAGS) -c $< -o $@
-output/dartlead_assert.o : source/drivers/src/dartlead_assert.c
+output/dartlead_assert.o : src/drivers/dartlead_assert.c
+	@$(CC) $(C_FLAGS) -c $< -o $@
+output/driver_GPIO.o : src/drivers/driver_GPIO.c
 	@$(CC) $(C_FLAGS) -c $< -o $@
