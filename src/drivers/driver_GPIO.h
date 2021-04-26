@@ -164,7 +164,7 @@ void GPIO_set_pull(GPIO_TypeDef * const GPIOx
  *    (input) The pin number to lock (must be between 0 and 15, inclusive).
  * @return 'true' if the lock operation was successful, 'false' otherwise.
  */
-bool GPIO_lock_pin(GPIO_TypeDef * const GPIOx
+bool GPIO_lock(GPIO_TypeDef * const GPIOx
 	, uint32_t const pin
 );
 
@@ -175,7 +175,7 @@ bool GPIO_lock_pin(GPIO_TypeDef * const GPIOx
  * @param pin
  *    (input) The pin number to lock (must be between 0 and 15, inclusive).
  */
-bool GPIO_is_pin_locked(GPIO_TypeDef * const GPIOx
+bool GPIO_is_locked(GPIO_TypeDef * const GPIOx
 	, uint32_t const pin
 );
 
