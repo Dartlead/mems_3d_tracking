@@ -104,13 +104,13 @@ SOURCES = \
 	port.c heap_4.c croutine.c event_groups.c \
 	list.c queue.c stream_buffer.c tasks.c \
 	timers.c startup_stm32f767zi.c system_stm32f767zi.c main.c \
-	dartlead_assert.c driver_GPIO.c driver_USART.c
+	dartlead_assert.c driver_GPIO.c driver_USART.c onboard_leds.c
 
 OBJECTS = \
 	output/port.o output/heap_4.o output/croutine.o output/event_groups.o \
 	output/list.o output/queue.o output/stream_buffer.o output/tasks.o \
 	output/timers.o output/startup_stm32f767zi.o output/system_stm32f767zi.o output/main.o \
-	output/dartlead_assert.o output/driver_GPIO.o output/driver_USART.o
+	output/dartlead_assert.o output/driver_GPIO.o output/driver_USART.o output/onboard_leds.o
 
 # =================================================================================================================
 # Rules
@@ -171,5 +171,9 @@ output/dartlead_assert.o : src/drivers/dartlead_assert.c
 	@$(CC) $(C_FLAGS) -c $< -o $@
 output/driver_GPIO.o : src/drivers/driver_GPIO.c
 	@$(CC) $(C_FLAGS) -c $< -o $@
+<<<<<<< HEAD
 output/driver_USART.o : src/drivers/driver_USART.c
+=======
+output/onboard_leds.o : src/drivers/onboard_leds.c
+>>>>>>> master
 	@$(CC) $(C_FLAGS) -c $< -o $@
