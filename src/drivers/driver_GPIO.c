@@ -1,5 +1,7 @@
 #include "driver_GPIO.h"
 
+/*! FreeRTOS includes.
+ */
 #include "FreeRTOS.h"
 #include "task.h"
 
