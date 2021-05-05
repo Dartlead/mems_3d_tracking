@@ -171,9 +171,7 @@ output/dartlead_assert.o : src/drivers/dartlead_assert.c
 	@$(CC) $(C_FLAGS) -c $< -o $@
 output/driver_GPIO.o : src/drivers/driver_GPIO.c
 	@$(CC) $(C_FLAGS) -c $< -o $@
-<<<<<<< HEAD
 output/driver_USART.o : src/drivers/driver_USART.c
-=======
+	@$(CC) $(C_FLAGS) -c $< -o $@
 output/onboard_leds.o : src/drivers/onboard_leds.c
->>>>>>> master
 	@$(CC) $(C_FLAGS) -c $< -o $@

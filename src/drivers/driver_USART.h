@@ -83,6 +83,17 @@ void USART_set_word_length(USART_TypeDef * const USARTx
 	, USART_word_length_t const word_length
 );
 
+/*! Sets the baud rate of the USART channel.
+ *
+ */
+void USART_set_baud_rate(USART_TypeDef * const USARTx
+	, uint32_t const baud_rate
+);
+
+/* ============================================================================================================= */
+/* USART Transmission Functions                                                                                  */
+/* ============================================================================================================= */
+
 #ifdef __cplusplus
 }
 #endif

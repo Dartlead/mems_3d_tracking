@@ -39,6 +39,10 @@ int main(void)
 	onboard_blue_led_init();
 	onboard_red_led_init();
 
+
+	/* By default the USART3 interface (PD8 for TX and PD9 for RX) is connected to the ST-Link by virtue of SB5 and
+	 * SB6 being present (although so are SB4 and SB7) */
+
 	xTaskCreate(LED_toggle_task, "LED toggle", 500, NULL, 1, NULL);
 
 	vTaskStartScheduler();
