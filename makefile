@@ -75,7 +75,8 @@ C_FLAGS += \
 	-I freertos/source/portable/GCC/ARM_CM7/r0p1/ \
 	-I freertos/source/portable/MemMang/ \
 	-I src/ \
-	-I src/drivers/
+	-I src/drivers/ \
+	-I src/drivers/hw
 
 # =================================================================================================================
 # Linker Flags
@@ -173,5 +174,5 @@ output/driver_GPIO.o : src/drivers/driver_GPIO.c
 	@$(CC) $(C_FLAGS) -c $< -o $@
 output/driver_USART.o : src/drivers/driver_USART.c
 	@$(CC) $(C_FLAGS) -c $< -o $@
-output/onboard_leds.o : src/drivers/onboard_leds.c
+output/onboard_leds.o : src/drivers/hw/onboard_leds.c
 	@$(CC) $(C_FLAGS) -c $< -o $@

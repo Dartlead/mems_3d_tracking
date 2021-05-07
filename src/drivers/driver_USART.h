@@ -35,16 +35,25 @@ typedef enum USART_word_length {
 	, USART_word_length_9 = 2
 } USART_word_length_t;
 
+/*! Enumeration of USART oversampling rate options.
+ *
+ */
+typedef enum USART_ovrsmpl_rate {
+	  USART_ovrsmpl_rate_8  = 0
+	, USART_ovrsmpl_rate_16 = 1
+} USART_ovrsmpl_rate_t;
+
 /* ============================================================================================================= */
 /* USART Configuration Struct                                                                                    */
 /* ============================================================================================================= */
 /*! Structure containing USART channel configuration options.
  */
 typedef struct USART_config {
-	USART_parity_t      parity;
-	USART_stop_bits_t   num_stop_bits;
-	USART_word_length_t word_length;
-	uint32_t            baud_rate;
+	USART_parity_t       parity;
+	USART_stop_bits_t    num_stop_bits;
+	USART_word_length_t  word_length;
+	USART_ovrsmpl_rate_t oversampling_rate;
+	uint32_t             baud_rate;
 } USART_config_t;
 
 /* ============================================================================================================= */
@@ -81,6 +90,13 @@ void USART_set_stop_bits(USART_TypeDef * const USARTx
  */
 void USART_set_word_length(USART_TypeDef * const USARTx
 	, USART_word_length_t const word_length
+);
+
+/*! Sets the oversampling rate of the USART channel.
+ *
+ */
+void USART_set_oversampling_rate(USART_TypeDef * const USARTx
+	, USART_ovrsmpl_rate_t const oversampling_rate
 );
 
 /*! Sets the baud rate of the USART channel.

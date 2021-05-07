@@ -9,6 +9,8 @@
 /* ============================================================================================================= */
 /*! Initializes a USART channel.
  *
+ * @note  The oversampling rate must be set before the baud rate as the function configuring the baud rate reads
+ *        the CR1 register to gather what oversampling rate has been chosen to compute the USARTDIV value.
  */
 void USART_init(USART_TypeDef * const USARTx
 	, USART_config_t const * const config
@@ -37,23 +39,12 @@ void USART_init(USART_TypeDef * const USARTx
 	USART_set_parity(USARTx, config->parity);
 	USART_set_stop_bits(USARTx, config->num_stop_bits);
 	USART_set_word_length(USARTx, config->word_length);
+	USART_set_oversampling_rate(USARTx, config->oversampling_rate);
+	USART_set_baud_rate(USARTx, config->baud_rate);
+
+	USARTx->CR1 |= 0x1UL << 3; //enable TX
 
 	USARTx->CR1 |= 0x1UL; //!# Enable the USART channel
-
-
-//1. Program the M bits in USART_CR1 to define the word length. DONE
-//2. Select the desired baud rate using the USART_BRR register.
-//3. Program the number of stop bits in USART_CR2. DONE
-//4. Enable the USART by writing the UE bit in USART_CR1 register to 1.
-//5. Select DMA enable (DMAT) in USART_CR3 if multibuffer communication is to take
-//place. Configure the DMA register as explained in multibuffer communication.
-//6. Set the TE bit in USART_CR1 to send an idle frame as first transmission.
-//7. Write the data to send in the USART_TDR register (this clears the TXE bit). Repeat this for each data to be
-//		transmitted in case of single buffer.
-//8. After writing the last data into the USART_TDR register, wait until TC=1. This indicates
-//	that the transmission of the last frame is complete. This is required for instance when
-//	the USART is disabled or enters the Halt mode to avoid corrupting the last
-//	transmission.	
 }
 
 /*! sets the parity control of the USART channel.
@@ -98,15 +89,19 @@ void USART_set_stop_bits(USART_TypeDef * const USARTx
 		case USART_stop_bits_0_5:
 			/* STOP[1:0] = 0b01 */
 			USARTx->CR2 = (USARTx->CR2 & ~(0x3UL << 12)) | (0x1UL << 12);
+			break;
 		case USART_stop_bits_1:
 			/* STOP[1:0] = 0b00 */
 			USARTx->CR2 &= ~(0x3UL << 12);
+			break;
 		case USART_stop_bits_1_5:
 			/* STOP[1:0] = 0b11 */
 			USARTx->CR2 |= 0x3UL << 12;
+			break;
 		case USART_stop_bits_2:
 			/* STOP[1:0] = 0b10 */
 			USARTx->CR2 = (USARTx->CR2 & ~(0x3UL << 12)) | (0x1UL << 13);
+			break;
 		default:
 			WTF;
 			break;
@@ -128,18 +123,99 @@ void USART_set_word_length(USART_TypeDef * const USARTx
 			/* M[1:0] = 0b10 */
 			USARTx->CR1 |=   0x1UL << 28;  //!# M[1] = 0b1
 			USARTx->CR1 &= ~(0x1UL << 12); //!# M[0] = 0b0
+			break;
 		case USART_word_length_8:
 			/* M[1:0] = 0b00 */
 			USARTx->CR1 &= ~(0x1UL << 28); //!# M[1] = 0b0
 			USARTx->CR1 &= ~(0x1UL << 12); //!# M[0] = 0b0
+			break;
 		case USART_word_length_9:
 			/* M[1:0] = 0b01 */
 			USARTx->CR1 &= ~(0x1UL << 28); //!# M[1] = 0b0
 			USARTx->CR1 |=   0x1UL << 12;  //!# M[0] = 0b1
+			break;
 		default:
 			WTF;
 			break;
 	}
+}
+
+/*! Sets the oversampling rate of the USART channel.
+ *
+ */
+void USART_set_oversampling_rate(USART_TypeDef * const USARTx
+	, USART_ovrsmpl_rate_t const oversampling_rate
+) {
+	configASSERT(USARTx != NULL);
+	configASSERT((oversampling_rate == USART_ovrsmpl_rate_8) || (oversampling_rate == USART_ovrsmpl_rate_16));
+	configASSERT(!(USARTx->CR1 & 0x1UL)); //!# Oversampling rate can only be changed if USART is disabled
+
+	switch (oversampling_rate) {
+		case USART_ovrsmpl_rate_8:
+			USARTx->CR1 |=   0x1UL << 15;  //!# OVER8 = 0b1
+			break;
+		case USART_ovrsmpl_rate_16:
+			USARTx->CR1 &= ~(0x1UL << 15); //!# OVER8 = 0b0
+			break;
+		default:
+			WTF;
+			break;
+	}
+}
+
+/*! Sets the baud rate of the USART channel.
+ *
+ * @brief The desired baud rate is computed as follows:
+ *        - When oversampling by 16, baud rate = fCK / USARTDIV         thus USARTDIV = fCK / baud rate
+ *        - When oversampling by 8,  baud rate = (2 * fCK) / USARTDIV   thus USARTDIV = (2 * fCK) / baud rate
+ *
+ *        Note: The division of fCK or (2 * fCK) is an integer division operation and floats should not be used.
+ *
+ *        Where fCK is the frequency of the clock driving the USART channel (APB2 clock for USART 1/6 and APB1
+ *        clock for USART 2/3/4/5/7/8) and USARTDIV is an unsigned fixed point number that is coded on the
+ *        USART_BRR register. The coding for USARTDIV is as follows:
+ *        - When oversampling by 16
+ *             USART_BRR = USARTDIV
+ *        - When oversampling by 8
+ *             USART_BRR[2:0]  = USARTDIV[3:0] shifted 1 bit to the right
+ *             USART_BRR[3]    = must be kept clear
+ *             USART_BRR[15:4] = USARTDIV[15:4]
+ */
+void USART_set_baud_rate(USART_TypeDef * const USARTx
+	, uint32_t const baud_rate
+) {
+	configASSERT(USARTx != NULL);
+	configASSERT(!(USARTx->CR1 & 0x1UL)); //!# BRR can only be changed if USART is disabled
+
+	uint32_t USARTDIV = 0, fCK = 0, temp = 0;
+
+	/* Determine which clock is driving the USART channel */
+	if ((USARTx == USART1) || (USARTx == USART6)) {
+		fCK = SystemAPB2Clock;
+	} else if (    (USARTx == USART2)
+				|| (USARTx == USART3)
+				|| (USARTx == UART4 )
+				|| (USARTx == UART5 )
+				|| (USARTx == UART7 )
+				|| (USARTx == UART8 )
+	) {
+		fCK = SystemAPB1Clock;
+	} else {
+		WTF;
+	}
+
+	/* Translate the desired baud to a BRR register compatible USARTDIV value */
+	if (USARTx->CR1 & (0x1UL << 15)) {
+		/* Oversampling by 8 */
+		USARTDIV = (2 * fCK) / baud_rate;
+		temp     = (USARTDIV & 0xFUL) >> 1;      //!# BRR[2:0] is USARTDIV[3:0] shifted 1 bit to the right
+		USARTDIV = (USARTDIV & ~(0xFUL)) | temp; //!# Concatenate USARTDIV[15:4] and temp (USARTDIV[3:1])
+	} else {
+		/* Oversampling by 16 */
+		USARTDIV = fCK / baud_rate;
+	}
+
+	USARTx->BRR = USARTDIV & 0xFFFFUL;
 }
 
 /* EOF */
