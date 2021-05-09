@@ -80,19 +80,20 @@ MEMORY
  *  Note that the main stack is so small because it is only needed for the startup logic and main(). The stacks of
  *  all the FreeRTOS tasks (as well as the task's TCB structure) comes from the heap.
  */
-__STACK_SIZE = 0x00004650; /* 18 kB */
+__STACK_SIZE = 0x0000ABF0; /* 43 kB */
 
 SECTIONS
 {
-	/* ========================================================================================================== */
-	/* Text Section                                                                                               */
-	/* ========================================================================================================== */
+	/* ========================================================================================================= */
+	/* Text Section                                                                                              */
+	/* ========================================================================================================= */
 	/*! The .text section for the interrupt vector table.
 	 *
 	 * @note  The vector table need not be in ITCM/AXIM flash. Depending on the value of the BOOT pin during
-	 *        system POR (more specifically the 4th clock pulse of the sysclk after POR) and the subsequent value of
-	 *        BOOT_ADD0 or BOOT_ADD1, the vector table can be located to any number of pre-determined locations.
-	 *        The default behavior though, programmed by ST, is to boot at address 0x0020 0000, a.k.a ITCM flash.
+	 *        system POR (more specifically the 4th clock pulse of the sysclk after POR) and the subsequent value
+	 *        of BOOT_ADD0 or BOOT_ADD1, the vector table can be located to any number of pre-determined
+	 *        locations. The default behavior though, programmed by ST, is to boot at address 0x0020 0000, a.k.a
+	 *        ITCM flash.
 	 *
 	 * @note  The 'ALIGN_WITH_INPUT' instruction isn't technically necessary in this situation b/c both the VMA and
 	 *        LMA for the .text.vector_table output section should be starting from the beginning of their
@@ -105,8 +106,8 @@ SECTIONS
 	 *        the .text.vector_table output section is not the first output section in the linker script and there
 	 *        are other output sections before it that have VMAs or LMAs in AXIM or ITCM flash. In this case,
 	 *        without the 'ALIGN_WITH_INPUT' instruction, the VMA of the .text.vector_table output section would
-	 *        follow alignment directives but the LMA would not which would inevitably cause the VMA and LMA to have
-	 *        different offsets from the base of ITCM flash and AXIM flash respectively.
+	 *        follow alignment directives but the LMA would not which would inevitably cause the VMA and LMA to
+	 *        have different offsets from the base of ITCM flash and AXIM flash respectively.
 	 */
 	.text.vector_table : ALIGN_WITH_INPUT
 	{
@@ -121,8 +122,8 @@ SECTIONS
 	 *
 	 * @note  The global section table is used to track the VMA, LMA, and size of the .text.fast_text, .data, and
 	 *        .bss sections. The GST is used by the boot code to determine the addressing involved with copying the
-	 *        .text.fast_text section from flash to ITCM, copying the .data section from flash to DTCM, and zero-ing
-	 *        out the .bss section.
+	 *        .text.fast_text section from flash to ITCM, copying the .data section from flash to DTCM, and
+	 *        zero-ing out the .bss section.
 	 */
 	.global_section_table : ALIGN_WITH_INPUT
 	{
@@ -153,9 +154,9 @@ SECTIONS
 	 *        the bases of their respective memory regions will have undefined behavior.
 	 *
 	 * @note  The output section starts off on a 32-byte alignment b/c when the embedded flash is configured in
-	 *        single bank mode (which it is b/c that is the default behavior i.e. nDBANK=1), reads of the flash over
-	 *        the ITCM bus results in an access of 256 bits. Thus we align to the nearest ART cache line read size
-	 *        of 256 bits.
+	 *        single bank mode (which it is b/c that is the default behavior i.e. nDBANK=1), reads of the flash
+	 *        over the ITCM bus results in an access of 256 bits. Thus we align to the nearest ART cache line read
+	 *        size of 256 bits.
 	 */
 	.text : ALIGN_WITH_INPUT
 	{
@@ -165,6 +166,25 @@ SECTIONS
 
 		. = ALIGN(4);
 		__etext = .;
+	} > FLASH_ITCM AT > FLASH_AXIM /* VMA in ITCM flash, LMA in AXIM flash */
+
+	/*! The .rodata section containing read-only data.
+	 *
+	 * @note  This section MUST come before the .text.fast_text section!!! This is because if it does not, the
+	 *        linker will move the LMA location forward through AXIM flash as it reads through the .text.fast_text
+	 *        output section and when the linker gets to this output section, the VMA will still be at the end of
+	 *        the .text but the LMA location will be at the end of the .text + the size of the .text.fast_text
+	 *        section. Having the VMA and LMA out-of-sync with different offsets from the bases of their respective
+	 *        memory regions will have undefined behavior.
+	 */
+	.rodata :
+	{
+		. = ALIGN(4);
+
+		*(.rodata)
+		*(.rodata*)
+
+		. = ALIGN(4);
 	} > FLASH_ITCM AT > FLASH_AXIM /* VMA in ITCM flash, LMA in AXIM flash */
 
 	/*! The .text section for critical, real-time routines.
@@ -182,19 +202,16 @@ SECTIONS
 		__fast_text_end__ = .;
 	} > ITCM AT > FLASH_AXIM /* VMA in ITCM, LMA in AXIM flash */
 
-	.roddata :
-	{
-		. = ALIGN(4);
-
-		*(.rodata)
-		*(.rodata*)
-
-		. = ALIGN(4);
-	} > FLASH_ITCM AT > FLASH_AXIM /* VMA in ITCM flash, LMA in AXIM flash */
-
-	/* ========================================================================================================== */
-	/* Data Section                                                                                               */
-	/* ========================================================================================================== */
+	/* ========================================================================================================= */
+	/* Data Section                                                                                              */
+	/* ========================================================================================================= */
+	/*! The .data section containing program data.
+	 *
+	 * @note  The .data section follows a slightly different rule than the .text and .text.fast_text sections. This
+	 *        is while there is only 16 kB of ITCM (which isn't that much and is why I made two distinct .text
+	 *        sections), there is plenty of DTCM so for now I can afford to place all .data sections into the DTCM
+	 *        memory region without the need for something like a .data.fast_data section.
+	 */
 	.data : 
 	{
 		. = ALIGN(4);
@@ -207,9 +224,9 @@ SECTIONS
 		__data_end__ = .;
 	} > DTCM AT > FLASH_AXIM /* VMA in DTCM, LMA in AXIM flash */
 
-	/* ========================================================================================================== */
-	/* .BSS, Uninitialized Data, Section                                                                          */
-	/* ========================================================================================================== */
+	/* ========================================================================================================= */
+	/* .BSS, Uninitialized Data, Section                                                                         */
+	/* ========================================================================================================= */
 	.bss : ALIGN(4)
 	{
 		__bss_start__ = .;
@@ -222,19 +239,19 @@ SECTIONS
 		__bss_end__ = .;
 	} > DTCM /* VMA and LMA in DTCM */
 
-	/* ========================================================================================================== */
-	/* Dummy Heap                                                                                                 */
-	/* ========================================================================================================== */
+	/* ========================================================================================================= */
+	/* Dummy Heap                                                                                                */
+	/* ========================================================================================================= */
 	/*! The output section containing the statically allocated array representing the heap.
 	 *
-	 * @note  This section is marked as NOLOAD because in the OpenOCD configuration script for the stm32f767zi there
-	 *        are two flash banks declared (three if you include the virtual alias for the ITCM flash but that is
-	 *        not applicable for this note). The first of the two flash banks is the AXIM flash which is used for
-	 *        *normal* code. The second flash bank is the OTP flash which is used for *non-normal* one-time write
-	 *        code. When the GDB loader attempts to load the .elf the stm32f2x OpenOCD flash driver will infer which
-	 *        flash bank to load to based on the address of each linker script output section. If the dummy heap
-	 *        section is loaded OpenOCD will throw a warning because there is no flash bank at 0x2020 0000 (the
-	 *        start of the main SRAM region). The NOLOAD prevents this warning during flashing.
+	 * @note  This section is marked as NOLOAD because in the OpenOCD configuration script for the stm32f767zi
+	 *        there are two flash banks declared (three if you include the virtual alias for the ITCM flash but
+	 *        that is not applicable for this note). The first of the two flash banks is the AXIM flash which is
+	 *        used for *normal* code. The second flash bank is the OTP flash which is used for *non-normal*
+	 *        one-time write code. When the GDB loader attempts to load the .elf the stm32f2x OpenOCD flash driver
+	 *        will infer which flash bank to load to based on the address of each linker script output section. If
+	 *        the dummy heap section is loaded OpenOCD will throw a warning because there is no flash bank at
+	 *        0x2020 0000 (the start of the main SRAM region). The NOLOAD prevents this warning during flashing.
 	 */
 	.heap_dummy (NOLOAD) : ALIGN(4)
 	{
@@ -245,9 +262,9 @@ SECTIONS
 		__heap_limit = .;
 	} > MAIN_SRAM /* VMA and LMA in main SRAM */
 
-	/* ========================================================================================================== */
-	/* User Stack                                                                                                 */
-	/* ========================================================================================================== */
+	/* ========================================================================================================= */
+	/* User Stack                                                                                                */
+	/* ========================================================================================================= */
 	.user_stack :
 	{
 		. = ALIGN(8);
@@ -259,9 +276,6 @@ SECTIONS
 		__stack_top = .;
 		__stack_base = .;
 	} > MAIN_SRAM /* VMA and LMA in main SRAM */
-
-	/* Check if the heap + stack overflows the amount of space available in main SRAM */
-	ASSERT(((ORIGIN(MAIN_SRAM) + LENGTH(MAIN_SRAM)) > __stack_base), "region main SRAM overflowed")
 }
 
 /* EOF */

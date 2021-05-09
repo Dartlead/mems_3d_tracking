@@ -323,14 +323,18 @@ __VECTOR_TABLE_ATTRIBUTE void (* const vector_table[])(void) = {
  *        the next 4 bytes after that which contains the .text.fast_text section's VMA. The next 4 bytes after
  *        that contain the .text.fast_text section's length, then it is simply a for-loop to transfer the data
  *        from the VMA to the LMA.
+ *
+ * @note  The gst_addr pointer is marked volatile b/c if it is not, the optimizer will (at level -O2 and greater),
+ *        treat the pointer as an array of length 1 and thus all of the pointer arithmetic done will result in
+ *        array out-of-boundary errors.
  */
 __NO_RETURN void Reset_Handler(void)
 {
-	uint32_t   i           = 0;
-	uint32_t   section_len = 0;
-	uint32_t * LMA_addr    = 0;
-	uint32_t * VMA_addr    = 0;
-	uint32_t * gst_addr    = (uint32_t *)(&__gst_start__);
+	uint32_t            i           = 0;
+	uint32_t            section_len = 0;
+	uint32_t *          LMA_addr    = 0;
+	uint32_t *          VMA_addr    = 0;
+	uint32_t * volatile gst_addr    = (uint32_t *)(&__gst_start__);
 
 	//!# Copy the .text.fast_text section from flash to ITCM
 	LMA_addr    = (uint32_t *)(*gst_addr);

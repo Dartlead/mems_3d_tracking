@@ -93,11 +93,11 @@ void GPIO_set_mode(GPIO_TypeDef * const GPIOx
 		case GPIO_mode_alt_func_13:
 		case GPIO_mode_alt_func_14:
 		case GPIO_mode_alt_func_15:
-			AFR_AFSEL_clear_mask = (pin <= 8) ? (0xFUL << (pin * 4)) : (0xFUL << ((pin - 8) * 4));
-			AFR_AFSEL_mask       = (pin <= 8) ? (mode  << (pin * 4)) : (mode  << ((pin - 8) * 4));
+			AFR_AFSEL_clear_mask = (pin <= 7) ? (0xFUL << (pin * 4)) : (0xFUL << ((pin - 8) * 4));
+			AFR_AFSEL_mask       = (pin <= 7) ? (mode  << (pin * 4)) : (mode  << ((pin - 8) * 4));
 
 			/* Mux the appropriate alternate function via AFR registers */
-			if (pin <= 8) {
+			if (pin <= 7) {
 				GPIOx->AFR[0] = (GPIOx->AFR[0] & ~AFR_AFSEL_clear_mask) | AFR_AFSEL_mask;
 			} else {
 				GPIOx->AFR[1] = (GPIOx->AFR[1] & ~AFR_AFSEL_clear_mask) | AFR_AFSEL_mask;
