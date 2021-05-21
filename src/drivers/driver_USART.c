@@ -7,6 +7,19 @@
 /* ============================================================================================================= */
 /* USART Configuration Functions                                                                                 */
 /* ============================================================================================================= */
+/*! Gets the default configuration for a USART channel.
+ *
+ */
+void USART_get_default_config(USART_config_t * const config)
+{
+	config->parity            = USART_parity_none;
+	config->num_stop_bits     = USART_stop_bits_1;
+	config->word_length       = USART_word_length_8;
+	config->oversampling_rate = USART_ovrsmpl_rate_16;
+	config->baud_rate         = 9600;
+}
+
+
 /*! Initializes a USART channel.
  *
  * @note  The oversampling rate must be set before the baud rate as the function configuring the baud rate reads
@@ -206,16 +219,71 @@ void USART_set_baud_rate(USART_TypeDef * const USARTx
 
 	/* Translate the desired baud to a BRR register compatible USARTDIV value */
 	if (USARTx->CR1 & (0x1UL << 15)) {
+		configASSERT(baud_rate * 8 <= fCK);      //!# Receiver can't sample at freq > clk clocking USART channel
+
 		/* Oversampling by 8 */
 		USARTDIV = (2 * fCK) / baud_rate;
 		temp     = (USARTDIV & 0xFUL) >> 1;      //!# BRR[2:0] is USARTDIV[3:0] shifted 1 bit to the right
 		USARTDIV = (USARTDIV & ~(0xFUL)) | temp; //!# Concatenate USARTDIV[15:4] and temp (USARTDIV[3:1])
 	} else {
+		configASSERT(baud_rate * 16 <= fCK);     //!# Receiver can't sample at freq > clk clocking USART channel
+
 		/* Oversampling by 16 */
 		USARTDIV = fCK / baud_rate;
 	}
 
 	USARTx->BRR = USARTDIV & 0xFFFFUL;
+}
+
+/* ============================================================================================================= */
+/* USART Transmission Functions                                                                                  */
+/* ============================================================================================================= */
+/*! Sends a frame of data over the TX line of the USART channel in a blocking manner.
+ *
+ * @note  We can safely ignore word length for the write into the transmit data register.
+ */
+void USART_send_frame_blocking(USART_TypeDef * const USARTx
+	, uint32_t const data
+) {
+	configASSERT(USARTx != NULL);
+
+	while (!(USARTx->ISR & (0x1UL << 7))); //!# Wait while transmit data register empty is false
+
+	USARTx->TDR = data;
+}
+
+/*! Sends a frame of data over the TX line of the USART channel in a non-blocking manner.
+ *
+ * @note  We can safely ignore word length for the write into the transmit data register.
+ */
+void USART_send_frame_nonblocking(USART_TypeDef * const USARTx
+	, uint32_t const data
+) {
+	configASSERT(USARTx != NULL);
+
+	USARTx->TDR = data;
+}
+
+/*! Receives a frame of data from the RX line of the USART channel in a blocking manner.
+ *
+ * @note  We can safely ignore word length for the read from the receive data register.
+ */
+uint32_t USART_receive_frame_blocking(USART_TypeDef * const USARTx) {
+	configASSERT(USARTx != NULL);
+
+	while (!(USARTx->ISR & (0x1UL << 5))); //!# Wait while read data register not empty is false
+
+	return USARTx->RDR;
+}
+
+/*! Receives a frame of data from the RX line of the USART channel in a non-blocking manner.
+ *
+ * @note  We can safely ignore word length for the read from the receive data register.
+ */
+uint32_t USART_receive_frame_nonblocking(USART_TypeDef * const USARTx) {
+	configASSERT(USARTx != NULL);
+
+	return USARTx->RDR;
 }
 
 /* EOF */

@@ -9,12 +9,12 @@
  */
 #include "dartlead_printf.h"
 #include "onboard_leds.h"
+#include "driver_USART.h"
 
 static void __attribute__((section(".text.fast_text"))) LED_toggle_task(void * parameter) {
 	TickType_t const delay_200ms    = pdMS_TO_TICKS(200UL);
 	TickType_t       last_wake_time = xTaskGetTickCount();
 
-	uint32_t i = 0;
 	uint8_t char1 = 'h';
 	uint8_t char2 = 'i';
 	uint8_t char3 = '\r';
@@ -34,21 +34,12 @@ static void __attribute__((section(".text.fast_text"))) LED_toggle_task(void * p
 
 		onboard_red_led_turn_off();
 		onboard_blue_led_turn_on();
-		USART3->TDR = char1;
-		i = 0;
-		while (i++ < 1000);
 
-		USART3->TDR = char2;
-		i = 0;
-		while (i++ < 1000);
+		USART_send_frame_blocking(USART3, char1);
+		USART_send_frame_blocking(USART3, char2);
+		USART_send_frame_blocking(USART3, char3);
+		USART_send_frame_blocking(USART3, char4);
 
-		USART3->TDR = char3;
-		i = 0;
-		while (i++ < 1000);
-
-		USART3->TDR = char4;
-		i = 0;
-		while (i++ < 1000);
 		vTaskDelayUntil(&last_wake_time, delay_200ms);
 
 		onboard_blue_led_turn_off();

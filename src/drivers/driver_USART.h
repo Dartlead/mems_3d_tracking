@@ -61,6 +61,8 @@ typedef struct USART_config {
 /* ============================================================================================================= */
 /*! Gets the default configuration for a USART channel.
  *
+ * @brief The default USART configuration is no parity bit, 1 stop bit, 8 bit word length, oversampling by 16, and
+ *        a 9600 baud rate.
  */
 void USART_get_default_config(USART_config_t * const config);
 
@@ -107,8 +109,31 @@ void USART_set_baud_rate(USART_TypeDef * const USARTx
 );
 
 /* ============================================================================================================= */
-/* USART Transmission Functions                                                                                  */
+/* USART Transmission/Reception Functions                                                                        */
 /* ============================================================================================================= */
+/*! Sends a frame of data over the TX line of the USART channel in a blocking manner.
+ *
+ */
+void USART_send_frame_blocking(USART_TypeDef * const USARTx
+	, uint32_t const data
+);
+
+/*! Sends a frame of data over the TX line of the USART channel in a non-blocking manner.
+ *
+ */
+void USART_send_frame_nonblocking(USART_TypeDef * const USARTx
+	, uint32_t const data
+);
+
+/*! Receives a frame of data from the RX line of the USART channel in a blocking manner.
+ *
+ */
+uint32_t USART_receive_frame_blocking(USART_TypeDef * const USARTx);
+
+/*! Receives a frame of data from the RX line of the USART channel in a non-blocking manner.
+ *
+ */
+uint32_t USART_receive_frame_nonblocking(USART_TypeDef * const USARTx);
 
 #ifdef __cplusplus
 }

@@ -216,6 +216,7 @@ void GPIO_write_atomic(GPIO_TypeDef * const GPIOx
  *    (input) The GPIO port. See device/registers/stm32f767zi_registers_GPIO.h for options.
  * @param pin
  *    (input) The pin number to read from (must be between 0 and 15, inclusive).
+ * @return The value of the pin, '1' for high and '0' for low.
  */
 uint32_t GPIO_read(GPIO_TypeDef * const GPIOx
 	, uint32_t const pin
