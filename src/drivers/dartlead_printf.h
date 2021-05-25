@@ -1,6 +1,8 @@
 #ifndef DARTLEAD_PRINTF_H
 #define DARTLEAD_PRINTF_H
 
+#include <stdarg.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -16,6 +18,13 @@ extern "C" {
  *        Word Length:         8 bits
  */
 void dartlead_printf_init(void);
+
+/*! Custom printf.
+ *
+ */
+void dartlead_printf(char const * format
+	, ...
+);
 
 #ifdef __cplusplus
 }

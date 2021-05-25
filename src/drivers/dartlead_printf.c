@@ -1,7 +1,26 @@
 #include "dartlead_printf.h"
 #include "driver_USART.h"
 #include "driver_GPIO.h"
+#include <stdbool.h>
 
+/* ============================================================================================================= */
+/* ASCII Conversion Functions                                                                                    */
+/* ============================================================================================================= */
+static void dartlead_itoa(int32_t const val
+	, uint32_t const base
+	, bool const negative
+	, char * buf
+) {
+	uint32_t buf_idx = 0;
+
+	while (val) {
+		buf[buf_idx++] = '0' + (val % base);
+	}
+}
+
+/* ============================================================================================================= */
+/* Public printf Functions                                                                                       */
+/* ============================================================================================================= */
 /*! Initializes the necessary hardware peripherals for printf functionality.
  *
  * @note  By default the USART3 interface (PD8 for TX and PD9 for RX with no hardware flow control) is connected to
@@ -25,6 +44,52 @@ void dartlead_printf_init(void) {
 	GPIO_init(GPIOD, 8, &PD8_9_config);
 	GPIO_init(GPIOD, 9, &PD8_9_config);
 	USART_init(USART3, &USART3_config);
+}
+
+/*!
+ *
+ */
+void dartlead_printf(char const * format
+	, ...
+) {
+	va_list args;
+	va_start(args, format);
+
+	while (*format) {
+		if (*format == '%') {
+			format++;
+
+			/* Evaluate format tags */
+			switch (*format) {
+				case 'd':
+				case 'i':
+					;
+					break;
+			}
+		} else {
+			USART_send_frame_blocking(USART3, *format++);
+			break;
+		}
+
+
+
+
+
+
+		switch (*format) {
+			case '%':
+				++format;
+
+				switch
+				break;
+			default:
+				USART_send_frame_blocking(USART3, *format);
+				format++;
+				break;
+		}
+	}
+
+	va_end(args);
 }
 
 /* EOF */
