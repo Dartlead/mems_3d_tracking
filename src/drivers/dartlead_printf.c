@@ -4,17 +4,49 @@
 #include <stdbool.h>
 
 /* ============================================================================================================= */
+/* Pound Defines                                                                                                 */
+/* ============================================================================================================= */
+#define DARTLEAD_PRINTF_MAX_BUF_LEN 25UL
+
+#define DARTLEAD_PRINTF_FLAG_UPPERCASE (1UL << 0)
+
+/* ============================================================================================================= */
 /* ASCII Conversion Functions                                                                                    */
 /* ============================================================================================================= */
-static void dartlead_itoa(int32_t const val
+/*!
+ *
+ */
+static void dartlead_itoa(int32_t val
 	, uint32_t const base
-	, bool const negative
-	, char * buf
+	, uint32_t const flags
+	, bool     const negative
+	, char *         buf
 ) {
 	uint32_t buf_idx = 0;
+	char     digit   = (char)(val % base);
 
-	while (val) {
-		buf[buf_idx++] = '0' + (val % base);
+	/* Create the ASCII string in reverse order */
+	while (val && (buf_idx < DARTLEAD_PRINTF_MAX_BUF_LEN)) {
+		if (digit < 10) {
+			buf[buf_idx++] = '0' + digit;
+		} else {
+			/* The -10 is to get how many 'places' over 10 the digit is */
+			buf[buf_idx++] = ((flags & DARTLEAD_PRINTF_FLAG_UPPERCASE) ? 'A' : 'a') + digit - 10;
+		}
+		val /= base;
+	}
+
+	if ((flags & DARTLEAD_PRINTF_FLAG_HASH) && (base == 16) && (len < DARTLEAD_PRINTF_MAX_BUF_LEN)) {
+		;
+	} else {
+		//!# Do nothing
+	}
+
+	/* */
+	if (negative && (buf_idx < DARTLEAD_PRINTF_MAX_BUF_LEN)) {
+		buf[buf_idx++] = '-';
+	} else {
+		//!# Do nothing
 	}
 }
 
