@@ -36,7 +36,7 @@
 
 #include <stddef.h>
 
-#include "dartlead_assert.h"
+//#include "dartlead_assert.h"
 
 /*-----------------------------------------------------------
  * Application specific definitions.
@@ -144,11 +144,20 @@
 #define xPortSysTickHandler                          SysTick_Handler
 
 /* Assert definition */
+#if 0
 #define configASSERT( EXPR ) \
 	do { \
 		if (!(EXPR)) { \
 			portDISABLE_INTERRUPTS(); \
 			dartlead_assert(); \
+		} \
+	} while (0)
+#endif
+#define configASSERT( EXPR ) \
+	do { \
+		if (!(EXPR)) { \
+			portDISABLE_INTERRUPTS(); \
+			while (1); \
 		} \
 	} while (0)
 
