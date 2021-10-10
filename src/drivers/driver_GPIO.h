@@ -2,8 +2,9 @@
 #define DRIVER_GPIO_H
 
 #include <cstdint>
+#include "stm32f767zi.h"
 
-enum class port : uint8_t {
+enum class port_t : uint8_t {
 	  port_A
 	, port_B
 	, port_C
@@ -17,7 +18,7 @@ enum class port : uint8_t {
 	, port_K
 };
 
-enum class pin : uint8_t {
+enum class pin_t : uint8_t {
 	  pin_0
 	, pin_1
 	, pin_2
@@ -36,7 +37,7 @@ enum class pin : uint8_t {
 	, pin_15
 };
 
-enum class mode : uint8_t {
+enum class mode_t : uint8_t {
 	  mode_alt_func_0
 	, mode_alt_func_1
 	, mode_alt_func_2
@@ -58,46 +59,61 @@ enum class mode : uint8_t {
 	, mode_analog
 };
 
-enum class output_type : uint8_t {
+enum class output_type_t : uint8_t {
 	  output_type_push_pull
 	, output_type_open_drain
 };
 
-enum class output_speed : uint8_t {
+enum class output_speed_t : uint8_t {
 	  output_speed_low
 	, output_speed_medium
 	, output_speed_high
 	, output_speed_very_high
 };
 
-enum class pull : uint8_t {
+enum class pull_t : uint8_t {
 	  pull_none
 	, pull_up
 	, pull_down
 };
 
+enum class GPIO_status_t : uint8_t {
+	  GPIO_status_ok
+	, GPIO_status_error
+};
+
 class GPIO {
 private:
-	port         port_letter;
-	pin          pin_num;
-	mode         pin_mode;
-	output_type  pin_output_type;
-	output_speed pin_output_speed;
-	pull         pin_pull;
+	port_t         port_letter;
+	GPIO_TypeDef * port_base_addr;
+	pin_t          num;
+	mode_t         mode;
+	output_type_t  output_type;
+	output_speed_t output_speed;
+	pull_t         pull;
+	bool           locked;
 
 public:
-	GPIO( port         const port_letter
-		, pin          const pin_num
-		, mode         const pin_mode
-		, output_type  const pin_output_type
-		, output_speed const pin_output_speed
-		, pull         const pin_pull
+	GPIO(port_t         const port_init
+		, pin_t          const pin_init
+		, mode_t         const mode_init
+		, output_type_t  const output_type_init
+		, output_speed_t const output_speed_init
+		, pull_t         const pull_init
 	);
 
-	int setupPin(int create); //Setup pin (ARGS create: whether to create or destroy pin (1 for create, 0 for destroy))
-	int setDirection(int direction); //Set pin direction (ARGS direction: either 1 for output or 0 for input)
-	int readValue(void); //Read current value of the pin (ARGS *level: Address of string type variable, run command with readValue(&STRING_VAR) and the result will be stored in STRING_VAR) (only works if _direction is 0 (input))
-	int writeValue(int level); //Write pin (ARGS level: level to set pin, either 0 for LOW or 1 for HIGH) (only works if _direction is 1 (output))
+	GPIO_status set_mode(mode const pin_mode);
+	GPIO_status set_output_type(output_type const pin_output_type);
+	GPIO_status set_output_speed(output_speed const pin_output_speed);
+	GPIO_status set_pull(pull const pin_pull);
+
+	GPIO_status lock_config(void);
+	GPIO_status is_locked(bool &locked);
+
+	GPIO_status write(uint32_t const val);
+	GPIO_status write_atomic(uint32_t const val);
+	GPIO_status read(uint32_t &val);
+	GPIO_status toggle(void);
 };
 
 #endif /* DRIVER_GPIO_H */
