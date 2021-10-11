@@ -20,6 +20,8 @@ static void __attribute__((section(".text.fast_text"))) LED_toggle_task(void * p
 	}
 }
 
+#include "driver_GPIO.h"
+
 int main(void)
 {
 	/* Configure the green LED */
@@ -28,6 +30,21 @@ int main(void)
 	GPIOB->OTYPER &= ~(0x1UL << 0);
 	GPIOB->OSPEEDR &= ~(0x3UL << 0);
 	GPIOB->PUPDR &= ~(0x3UL << 0);
+
+	GPIO::port_t PB6_port = GPIO::port_t::port_B;
+	GPIO::pin_t  PB6_pin  = GPIO::pin_t::pin_6;
+	GPIO::mode_t PB6_mode = GPIO::mode_t::output;
+	GPIO::output_type_t PB6_output_type = GPIO::output_type_t::output_type_push_pull;
+	GPIO::output_speed_t PB6_output_speed = GPIO::output_speed_t::output_speed_low;
+	GPIO::pull_t PB6_pull = GPIO::pull_t::pull_none;
+
+	GPIO::pin(PB6_port
+		, PB6_pin
+		, PB6_mode
+		, PB6_output_type
+		, PB6_output_speed
+		, PB6_pull
+	);
 
 
 
