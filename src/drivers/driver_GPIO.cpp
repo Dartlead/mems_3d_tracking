@@ -1,7 +1,7 @@
 #include "driver_GPIO.h"
 
 GPIO::pin::pin(port_t const pin_port
-	, pin_t           const pin_number
+	, uint8_t         const pin_number
 	, mode_t          const pin_mode
 	, output_type_t   const pin_output_type
 	, output_speed_t  const pin_output_speed
@@ -83,7 +83,7 @@ GPIO::status_t GPIO::pin::set_mode(mode_t const pin_mode) {
 	//configASSERT(pin <= GPIO_MAX_PIN_NUM);
 	//configASSERT((mode >= GPIO_mode_alt_func_0) && (mode <= GPIO_mode_analog));
 
-	uint32_t AFR_AFSEL_clear_mask = 0; //!# Bit mask to clear a single AFRl/H AFSELy field
+	uint32_t AFR_AFSEL_clear_mask = 0; //!# Bit mask to clear a single AFRL/H AFSELy field
 	uint32_t AFR_AFSEL_mask       = 0; //!# Bit mask to set the requested pin's AFRL/H AFSELy field
 
 	GPIO::status_t ret = GPIO::status_t::invalid_pin_mode;
@@ -105,33 +105,29 @@ GPIO::status_t GPIO::pin::set_mode(mode_t const pin_mode) {
 		case GPIO::mode_t::alt_func_13:
 		case GPIO::mode_t::alt_func_14:
 		case GPIO::mode_t::alt_func_15:
-			AFR_AFSEL_clear_mask = (number <= GPIO::pin_t::pin_8) ?
-				(0xFUL     << ( (uint32_t)number      * 4)) :
-				(0xFUL     << (((uint32_t)number - 8) * 4));
-			AFR_AFSEL_mask       = (number <= GPIO::pin_t::pin_8) ?
-				((uint32_t)pin_mode  << ( (uint32_t)number      * 4)) :
-				((uint32_t)pin_mode  << (((uint32_t)number - 8) * 4));
+			AFR_AFSEL_clear_mask = (number <= 8) ? (0xFUL << (number * 4)) : (0xFUL << ((number - 8) * 4));
+			AFR_AFSEL_mask       =
+				(number <= 8) ? ((uint32_t)pin_mode << (number * 4)) : ((uint32_t)pin_mode << ((number - 8) * 4));
 
 			/** Mux the appropriate alternate function via AFR registers */
-			if (number <= GPIO::pin_t::pin_8) {
+			if (number <= 8) {
 				port_base_addr->AFR[0] = (port_base_addr->AFR[0] & ~AFR_AFSEL_clear_mask) | AFR_AFSEL_mask;
 			} else {
 				port_base_addr->AFR[1] = (port_base_addr->AFR[1] & ~AFR_AFSEL_clear_mask) | AFR_AFSEL_mask;
 			}
 
 			/** Change MODE to alternate function */
-			port_base_addr->MODER =
-				(port_base_addr->MODER & ~(0x3UL << ((uint32_t)number * 2))) | (0x2UL << ((uint32_t)number * 2));
+			port_base_addr->MODER = (port_base_addr->MODER & ~(0x3UL << (number * 2))) | (0x2UL << (number * 2));
 
 			ret = GPIO::status_t::ok;
 			break;
 		case GPIO::mode_t::input:
-			port_base_addr->MODER &= ~(0x3UL << ((uint32_t)number * 2));
+			port_base_addr->MODER &= ~(0x3UL << (number * 2));
 			ret = GPIO::status_t::ok;
 			break;
 		case GPIO::mode_t::output:
 			port_base_addr->MODER =
-				(port_base_addr->MODER & ~(0x3UL << ((uint32_t)number * 2))) | (0x1UL << ((uint32_t)number * 2));
+				(port_base_addr->MODER & ~(0x3UL << (number * 2))) | (0x1UL << (number * 2));
 			ret = GPIO::status_t::ok;
 			break;
 		case GPIO::mode_t::analog:
@@ -145,6 +141,33 @@ GPIO::status_t GPIO::pin::set_mode(mode_t const pin_mode) {
 
 	/** Update mode private member */
 	mode = pin_mode;
+
+	return ret;
+}
+
+GPIO::status_t GPIO::pin::set_output_type(output_type_t const pin_output_type) {
+	//configASSERT(GPIOx != NULL);
+	//configASSERT(pin <= GPIO_MAX_PIN_NUM);
+	//configASSERT((output_type >= GPIO_output_type_push_pull) && (output_type <= GPIO_output_type_open_drain));
+
+	GPIO::status_t ret = GPIO::status_t::invalid_pin_output_type;
+
+	switch (pin_output_type) {
+		case GPIO::output_type_t::push_pull:
+			GPIOx->OTYPER &= ~(0x1UL << number);
+			ret = GPIO::status_t::ok;
+			break;
+		case GPIO::output_type_t::open_drain:
+			GPIOx->OTYPER |= 0x1UL << number;
+			ret = GPIO::status_t::ok;
+			break;
+		default:
+			ret = GPIO::status_t::invalid_pin_output_type;
+			break;
+	}
+
+	/** Update output type private member */
+	output_type = pin_output_type;
 
 	return ret;
 }
