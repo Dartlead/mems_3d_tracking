@@ -78,6 +78,47 @@ GPIO::pin::pin(port_t const pin_port
 	locked       = false;
 }
 
+GPIO::pin::~pin() {
+	/** Disable peripheral clock to the GPIO port */
+	switch (port) {
+		case GPIO::port_t::port_A:
+			RCC->AHB1ENR  &= ~0x1UL;
+			break;
+		case GPIO::port_t::port_B:
+			RCC->AHB1ENR &= ~(0x1UL << 1);
+			break;
+		case GPIO::port_t::port_C:
+			RCC->AHB1ENR &= ~(0x1UL << 2);
+			break;
+		case GPIO::port_t::port_D:
+			RCC->AHB1ENR &= ~(0x1UL << 3);
+			break;
+		case GPIO::port_t::port_E:
+			RCC->AHB1ENR &= ~(0x1UL << 4);
+			break;
+		case GPIO::port_t::port_F:
+			RCC->AHB1ENR &= ~(0x1UL << 5);
+			break;
+		case GPIO::port_t::port_G:
+			RCC->AHB1ENR &= ~(0x1UL << 6);
+			break;
+		case GPIO::port_t::port_H:
+			RCC->AHB1ENR &= ~(0x1UL << 7);
+			break;
+		case GPIO::port_t::port_I:
+			RCC->AHB1ENR &= ~(0x1UL << 8);
+			break;
+		case GPIO::port_t::port_J:
+			RCC->AHB1ENR &= ~(0x1UL << 9);
+			break;
+		case GPIO::port_t::port_K:
+			RCC->AHB1ENR &= ~(0x1UL << 10);
+			break;
+		default:
+			break;
+	}
+}
+
 GPIO::status_t GPIO::pin::set_mode(mode_t const pin_mode) {
 	//configASSERT(GPIOx != NULL);
 	//configASSERT(pin <= GPIO_MAX_PIN_NUM);
@@ -154,15 +195,14 @@ GPIO::status_t GPIO::pin::set_output_type(output_type_t const pin_output_type) {
 
 	switch (pin_output_type) {
 		case GPIO::output_type_t::push_pull:
-			GPIOx->OTYPER &= ~(0x1UL << number);
+			port_base_addr->OTYPER &= ~(0x1UL << number);
 			ret = GPIO::status_t::ok;
 			break;
 		case GPIO::output_type_t::open_drain:
-			GPIOx->OTYPER |= 0x1UL << number;
+			port_base_addr->OTYPER |= 0x1UL << number;
 			ret = GPIO::status_t::ok;
 			break;
 		default:
-			ret = GPIO::status_t::invalid_pin_output_type;
 			break;
 	}
 
@@ -171,3 +211,161 @@ GPIO::status_t GPIO::pin::set_output_type(output_type_t const pin_output_type) {
 
 	return ret;
 }
+
+GPIO::status GPIO::pin::set_output_speed(output_speed const pin_output_speed) {
+	//configASSERT(GPIOx != NULL);
+	//configASSERT(pin <= GPIO_MAX_PIN_NUM);
+	//configASSERT((output_speed >= GPIO_output_speed_low) && (output_speed <= GPIO_output_speed_very_high));
+
+	GPIO::status ret = GPIO::status::invalid_pin_output_speed;
+
+	switch (pin_output_speed) {
+		case GPIO::output_speed::low:
+			port_base_addr->OSPEEDR &= ~(0x3UL << (number * 2));
+			ret = GPIO::status::ok;
+			break;
+		case GPIO::output_speed::medium:
+			port_base_addr->OSPEEDR = (port_base_addr->OSPEEDR & ~(0x3UL << (number * 2))) | (0x1UL << (number * 2));
+			ret = GPIO::status::ok;
+			break;
+		case GPIO::output_speed::high:
+			port_base_addr->OSPEEDR = (port_base_addr->OSPEEDR & ~(0x3UL << (number * 2))) | (0x2UL << (number * 2));
+			ret = GPIO::status::ok;
+			break;
+		case GPIO::output_speed::very_high:
+			port_base_addr->OSPEEDR |= 0x3UL << (number * 2);
+			ret = GPIO::status::ok;
+			break;
+		default:
+			//WTF;
+			break;
+	}
+
+	/** Update output speed private member */
+	output_speed = pin_output_speed;
+
+	return ret;
+}
+
+GPIO::status GPIO::pin::set_pull(pull const pin_pull) {
+	//configASSERT(GPIOx != NULL);
+	//configASSERT(pin <= GPIO_MAX_PIN_NUM);
+	//configASSERT((pull >= GPIO_pull_none) && (pull <= GPIO_pull_down));
+
+	GPIO::status ret = GPIO::status::invalid_pin_pull;
+
+	switch (pin_pull) {
+		case GPIO::pull::none:
+			port_base_addr->PUPDR &= ~(0x3UL << (pin * 2));
+			break;
+		case GPIO::pull::up:
+			port_base_addr->PUPDR = (port_base_addr->PUPDR & ~(0x3UL << (number * 2))) | (0x1UL << (number * 2));
+			break;
+		case GPIO::pull::down:
+			port_base_addr->PUPDR = (port_base_addr->PUPDR & ~(0x3UL << (number * 2))) | (0x2UL << (number * 2));
+			break;
+		default:
+			//WTF;
+			break;
+	}
+
+	/** Update pull private member */
+	pull = pin_pull;
+
+	return ret;
+}
+
+/**
+ * @note  The lock sequence is as follows (where LCKR[15:0] contains a '1' in the bit position corresponding to
+ *        pin number being locked):
+ *        (1) Write LCKR[16] = '1' + LCKR[15:0]
+ *        (2) Write LCKR[16] = '0' + LCKR[15:0]
+ *        (3) Write LCKR[16] = '1`' + LCKR[15:0]
+ *        (4) Read LCKR
+ *        (5) Optionally read LCKR to verify LCKR[16] == 1 (confirms that the LOCK is active)
+ * @note  The lock sequence can only be performed using word access to the GPIOx_LCKR register due to the fact that
+ *        GPIOx_LCKR bit 16 has to be set at the same time as the [15:0] bits.
+ * @note  This function is forcibly optimized at -O0 to ensure that the correct lock sequence is respected and not
+ *        optimized out.
+ */
+GPIO::status __attribute__((optimize("O0"))) GPIO::pin::lock_config() {
+	//configASSERT(GPIOx != NULL);
+	//configASSERT(pin <= GPIO_MAX_PIN_NUM);
+
+	uint32_t     LCKR_15_0 = (port_base_addr->LCKR & 0xFFFFUL) | (0x1UL << number);
+	GPIO::status ret       = GPIO::status::lock_failed;
+
+	/** LOCK write sequence */
+	port_base_addr->LCKR = 0x10000UL | LCKR_15_0;
+	port_base_addr->LCKR = LCKR_15_0;
+	port_base_addr->LCKR = 0x10000UL | LCKR_15_0;
+	LCKR_15_0            = port_base_addr->LCKR;
+	LCKR_15_0            = port_base_addr->LCKR;
+
+	if ((LCKR_15_0 & (0x1UL << 16)) && (LCKR_15_0 & (0x1UL << number))) {
+		locked = true; //Lock was successful
+		ret    = GPIO::status::ok;
+	} else {
+		locked = false; //Lock was unsuccessful
+	}
+
+	return ret;
+}
+
+GPIO::status GPIO::pin::is_locked(bool &pin_locked)
+{
+	pin_locked = locked;
+	return GPIO::stats::ok;
+}
+
+GPIO::status GPIO::pin::write(uint32_t const val) {
+	//configASSERT(GPIOx != NULL);
+	//configASSERT(pin <= GPIO_MAX_PIN_NUM);
+
+	if (val) {
+		port_base_addr->ODR |=   0x1UL << number;
+	} else {
+		port_base_addr->ODR &= ~(0x1UL << number);
+	}
+
+	return GPIO::status::ok;
+}
+
+GPIO::status GPIO::pin::write_atomic(uint32_t const val) {
+	//configASSERT(GPIOx != NULL);
+	//configASSERT(pin <= GPIO_MAX_PIN_NUM);
+
+	uint8_t const clr_bit_offset = 16;
+
+	if (val) {
+		port_base_addr->BSRR |= 0x1UL << number;
+	} else {
+		port_base_addr->BSRR |= 0x1UL << (number + clr_bit_offset);
+	}
+
+	return GPIO::status::ok;
+}
+
+GPIO::status GPIO::pin::read(uint32_t &val) {
+	//configASSERT(GPIOx != NULL);
+	//configASSERT(pin <= GPIO_MAX_PIN_NUM);
+
+	if (port_base_addr->IDR & (0x1UL << number)) {
+		val = 1;
+	} else {
+		val = 0;
+	}
+
+	return GPIO::status::ok;
+}
+
+GPIO::status GPIO::pin::toggle() {
+	//configASSERT(GPIOx != NULL);
+	//configASSERT(pin <= GPIO_MAX_PIN_NUM);
+
+	port_base_addr->ODR ^= 0x1UL << number;
+
+	return GPIO::status::ok;
+}
+
+/* EOF */

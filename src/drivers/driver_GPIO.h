@@ -9,7 +9,7 @@ namespace GPIO
 	/**
 	 * @enum Enumeration of all available GPIO ports.
 	 */
-	enum class port_t : uint8_t {
+	enum class port : uint8_t {
 		  A /**< GPIO Port A */
 		, B /**< GPIO Port B */
 		, C /**< GPIO Port C */
@@ -26,7 +26,7 @@ namespace GPIO
 	/**
 	 * @enum Enumeration of all possible GPIO pin modes.
 	 */
-	enum class mode_t : uint8_t {
+	enum class mode : uint8_t {
 		  alt_func_0  /**< Alternate Function Mode 0        */
 		, alt_func_1  /**< Alternate Function Mode 1        */
 		, alt_func_2  /**< Alternate Function Mode 2        */
@@ -51,7 +51,7 @@ namespace GPIO
 	/**
 	 * @enum Enumeration of different output buffer modes when pin is in Output Mode.
 	 */
-	enum class output_type_t : uint8_t {
+	enum class output_type : uint8_t {
 		  push_pull  /**< Push-Pull  */
 		, open_drain /**< Open-Drain */
 	};
@@ -60,7 +60,7 @@ namespace GPIO
 	 * @enum Enumeration of maximum toggling frequencies for pins.
 	 * @details View Table 67. I/O AC characteristics in the datasheet (DS11532 Rev 7).
 	 */
-	enum class output_speed_t : uint8_t {
+	enum class output_speed : uint8_t {
 		  low       /**< Maximum toggling speed of 8 MHz (depending on V_DD and C_L)   */
 		, medium    /**< Maximum toggling speed of 50 MHz (depending on V_DD and C_L)  */
 		, high      /**< Maximum toggling speed of 100 MHz (depending on V_DD and C_L) */
@@ -71,7 +71,7 @@ namespace GPIO
 	 * @enum Enumeration of internal weak pull resistors options for pins.
 	 * @details View Table 65. I/O static characteristics in the datasheet (DS11532 Rev 7).
 	 */
-	enum class pull_t : uint8_t {
+	enum class pull : uint8_t {
 		  none /**< No internal pull-up or pull-down resistor   */
 		, up   /**< 50/14 kohm weak internal pull-up resistor   */
 		, down /**< 50/14 kohm weak internal pull-down resistor */
@@ -80,44 +80,48 @@ namespace GPIO
 	/**
 	 * @enum Enumeration of status return values for all pin methods.
 	 */
-	enum class status_t : uint8_t {
-		  ok                      /**< No issues, method operated successfully */
-		, invalid_pin_mode        /**< Invalid pin mode                        */
-		, invalid_pin_output_type /**< Invalid pin output type                 */
+	enum class status : uint8_t {
+		  ok                       /**< No issues, method operated successfully */
+		, invalid_pin_mode         /**< Invalid pin mode                        */
+		, invalid_pin_output_type  /**< Invalid pin output type                 */
+		, invalid_pin_output_speed /**< Invalid pin output speed                */
+		, invalid_pin_pull         /**< Invalid pin pull                        */
+		, lock_failed              /**< Failed to lock the pin's configuration  */
 	};
 
 	class pin {
 	private:
-		port_t         port;
-		GPIO_TypeDef * port_base_addr;
-		uint8_t        number;
-		mode_t         mode;
-		output_type_t  output_type;
-		output_speed_t output_speed;
-		pull_t         pull;
-		bool           locked;
+		port           port;           /**< GPIO port of the pin                      */
+		GPIO_TypeDef * port_base_addr; /**< Base address of the GPIO port             */
+		uint8_t        number;         /**< Pin number                                */
+		mode_t         mode;           /**< Mode of the pin                           */
+		output_type    output_type;    /**< Output type of the pin                    */
+		output_speed   output_speed;   /**< Output speed of the pin                   */
+		pull           pull;           /**< Pull of the pin                           */
+		bool           locked;         /**< Whether the pin's configuration is locked */
 
 	public:
-		pin( port_t         const pin_port
-			, uint8_t        const pin_number
-			, mode_t         const pin_mode
-			, output_type_t  const pin_output_type
-			, output_speed_t const pin_output_speed
-			, pull_t         const pin_pull
+		pin( port         const pin_port
+			, uint8_t      const pin_number
+			, mode_t       const pin_mode
+			, output_type  const pin_output_type
+			, output_speed const pin_output_speed
+			, pull         const pin_pull
 		);
+		~pin();
 
-		status_t set_mode(mode_t const pin_mode);
-		status_t set_output_type(output_type_t const pin_output_type);
-		status_t set_output_speed(output_speed_t const pin_output_speed);
-		status_t set_pull(pull_t const pin_pull);
+		status set_mode(mode const pin_mode);
+		status set_output_type(output_type const pin_output_type);
+		status set_output_speed(output_speed const pin_output_speed);
+		status set_pull(pull const pin_pull);
 
-		status_t lock_config(void);
-		status_t is_locked(bool &locked);
+		status lock_config();
+		status is_locked(bool &pin_locked);
 
-		status_t write(uint32_t const val);
-		status_t write_atomic(uint32_t const val);
-		status_t read(uint32_t &val);
-		status_t toggle(void);
+		status write(uint32_t const val);
+		status write_atomic(uint32_t const val);
+		status read(uint32_t &val);
+		status toggle();
 	};
 }
 
