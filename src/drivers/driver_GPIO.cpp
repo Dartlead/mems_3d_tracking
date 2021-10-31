@@ -1,12 +1,6 @@
 #include "driver_GPIO.h"
 
-GPIO::pin::pin(port const pin_port
-	, uint8_t       const pin_number
-	, mode          const pin_mode
-	, output_type   const pin_output_type
-	, output_speed  const pin_output_speed
-	, pull          const pin_pull
-) {
+GPIO::pin::pin(port const pin_port, uint8_t const pin_number) {
 	/** Enable the peripheral clock to the GPIO port and update private members */
 	//This can fail if the user provides an incorrect port
 	switch (pin_port) {
@@ -71,10 +65,10 @@ GPIO::pin::pin(port const pin_port
 
 	/** Set the rest of the private members */
 	number              = pin_number;
-	mode_member         = pin_mode;
-	output_type_member  = pin_output_type;
-	output_speed_member = pin_output_speed;
-	pull_member         = pin_pull;
+	mode_member         = GPIO::mode::output;
+	output_type_member  = GPIO::output_type::push_pull;
+	output_speed_member = GPIO::output_speed::low;
+	pull_member         = GPIO::pull::none;
 	locked              = false;
 }
 

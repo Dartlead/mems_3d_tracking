@@ -124,13 +124,13 @@ SOURCES = \
 	port.c          heap_4.c              croutine.c           event_groups.c \
 	list.c          queue.c               stream_buffer.c      tasks.c        \
 	timers.c        startup_stm32f767zi.c system_stm32f767zi.c main.cpp       \
-	driver_GPIO.cpp
+	driver_GPIO.cpp onboard_led.cpp
 
 OBJECTS = \
 	output/port.o        output/heap_4.o              output/croutine.o           output/event_groups.o \
 	output/list.o        output/queue.o               output/stream_buffer.o      output/tasks.o        \
 	output/timers.o      output/startup_stm32f767zi.o output/system_stm32f767zi.o output/main.o         \
-	output/driver_GPIO.o
+	output/driver_GPIO.o output/onboard_led.o
 
 # =================================================================================================================
 # Rules
@@ -187,4 +187,6 @@ output/system_stm32f767zi.o : device/system_stm32f767zi.c
 output/main.o : src/main.cpp
 	@$(CPPC) $(CPP_FLAGS) -c $< -o $@
 output/driver_GPIO.o : src/drivers/driver_GPIO.cpp
+	@$(CPPC) $(CPP_FLAGS) -c $< -o $@
+output/onboard_led.o : src/drivers/onboard_led.cpp
 	@$(CPPC) $(CPP_FLAGS) -c $< -o $@

@@ -101,13 +101,7 @@ namespace GPIO
 		bool           locked;              /**< Whether the pin's configuration is locked */
 
 	public:
-		pin(  port         const pin_port
-			, uint8_t      const pin_number
-			, mode         const pin_mode
-			, output_type  const pin_output_type
-			, output_speed const pin_output_speed
-			, pull         const pin_pull
-		);
+		pin(port const pin_port, uint8_t const pin_number);
 		~pin();
 
 		status set_mode(mode const pin_mode);
