@@ -36,8 +36,6 @@
 
 #include <stddef.h>
 
-//#include "dartlead_assert.h"
-
 /*-----------------------------------------------------------
  * Application specific definitions.
  *
@@ -142,26 +140,6 @@
 #define xPortPendSVHandler                           PendSV_Handler
 #define vPortSVCHandler                              SVC_Handler
 #define xPortSysTickHandler                          SysTick_Handler
-
-/* Assert definition */
-#if 0
-#define configASSERT( EXPR ) \
-	do { \
-		if (!(EXPR)) { \
-			portDISABLE_INTERRUPTS(); \
-			dartlead_assert(); \
-		} \
-	} while (0)
-#endif
-#define configASSERT( EXPR ) \
-	do { \
-		if (!(EXPR)) { \
-			portDISABLE_INTERRUPTS(); \
-			while (1); \
-		} \
-	} while (0)
-
-#define WTF configASSERT(0)
 
 #endif /* FREERTOS_CONFIG_H */
 

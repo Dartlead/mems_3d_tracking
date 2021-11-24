@@ -1,5 +1,13 @@
 #include "driver_GPIO.h"
+#include "dartlead_assert.h"
+#include <cstddef>
 
+#define GPIO_MAX_PIN_NUM 15
+
+/**
+ * @details Initializes a GPIO pin by enabling the AHB clock to the GPIO port and updating the relevant members
+ *          with their correct values.
+ */
 GPIO::pin::pin(port const pin_port, uint8_t const pin_number) {
 	/** Enable the peripheral clock to the GPIO port and update private members */
 	//This can fail if the user provides an incorrect port
@@ -60,6 +68,7 @@ GPIO::pin::pin(port const pin_port, uint8_t const pin_number) {
 			port_base_addr = GPIOK;
 			break;
 		default:
+			dartlead_WTF;
 			break;
 	}
 
@@ -72,6 +81,9 @@ GPIO::pin::pin(port const pin_port, uint8_t const pin_number) {
 	locked              = false;
 }
 
+/**
+ * @details Deinitializes a GPIO pin by disabling the AHB clock to the GPIO port.
+ */
 GPIO::pin::~pin() {
 	/** Disable peripheral clock to the GPIO port */
 	switch (port_member) {
@@ -109,17 +121,21 @@ GPIO::pin::~pin() {
 			RCC->AHB1ENR &= ~(0x1UL << 10);
 			break;
 		default:
+			dartlead_WTF;
 			break;
 	}
 }
 
+/**
+ * @details Updates the private member and the GPIO pin's port's MODER register with the requested mode.
+ */
 GPIO::status GPIO::pin::set_mode(mode const pin_mode) {
-	//configASSERT(GPIOx != NULL);
-	//configASSERT(pin <= GPIO_MAX_PIN_NUM);
-	//configASSERT((mode >= GPIO_mode_alt_func_0) && (mode <= GPIO_mode_analog));
+	dartlead_assert(port_base_addr != NULL);
+	dartlead_assert(number <= GPIO_MAX_PIN_NUM);
+	dartlead_assert((pin_mode >= GPIO::mode::alt_func_0) && (pin_mode <= GPIO::mode::analog));
 
-	uint32_t AFR_AFSEL_clear_mask = 0; //!# Bit mask to clear a single AFRL/H AFSELy field
-	uint32_t AFR_AFSEL_mask       = 0; //!# Bit mask to set the requested pin's AFRL/H AFSELy field
+	uint32_t AFR_AFSEL_clear_mask = 0; //Bit mask to clear a single AFRL/H AFSELy field
+	uint32_t AFR_AFSEL_mask       = 0; //Bit mask to set the requested pin's AFRL/H AFSELy field
 
 	GPIO::status ret = GPIO::status::invalid_pin_mode;
 
@@ -171,6 +187,7 @@ GPIO::status GPIO::pin::set_mode(mode const pin_mode) {
 			break;
 		default:
 			ret = GPIO::status::invalid_pin_mode;
+			dartlead_WTF;
 			break;
 	}
 
@@ -180,10 +197,16 @@ GPIO::status GPIO::pin::set_mode(mode const pin_mode) {
 	return ret;
 }
 
+/**
+ * @details Updates the private member and the GPIO pin's port's OTYPER register with the requested output type.
+ */
 GPIO::status GPIO::pin::set_output_type(output_type const pin_output_type) {
-	//configASSERT(GPIOx != NULL);
-	//configASSERT(pin <= GPIO_MAX_PIN_NUM);
-	//configASSERT((output_type >= GPIO_output_type_push_pull) && (output_type <= GPIO_output_type_open_drain));
+	dartlead_assert(port_base_addr != NULL);
+	dartlead_assert(number <= GPIO_MAX_PIN_NUM);
+	dartlead_assert(
+		(pin_output_type >= GPIO::output_type::push_pull ) &&
+		(pin_output_type <= GPIO::output_type::open_drain)
+	);
 
 	GPIO::status ret = GPIO::status::invalid_pin_output_type;
 
@@ -197,6 +220,7 @@ GPIO::status GPIO::pin::set_output_type(output_type const pin_output_type) {
 			ret = GPIO::status::ok;
 			break;
 		default:
+			dartlead_WTF;
 			break;
 	}
 
@@ -206,10 +230,16 @@ GPIO::status GPIO::pin::set_output_type(output_type const pin_output_type) {
 	return ret;
 }
 
+/**
+ * @details Updates the private member and the GPIO pin's port's OSPEEDR register with the requested output speed.
+ */
 GPIO::status GPIO::pin::set_output_speed(output_speed const pin_output_speed) {
-	//configASSERT(GPIOx != NULL);
-	//configASSERT(pin <= GPIO_MAX_PIN_NUM);
-	//configASSERT((output_speed >= GPIO_output_speed_low) && (output_speed <= GPIO_output_speed_very_high));
+	dartlead_assert(port_base_addr != NULL);
+	dartlead_assert(number <= GPIO_MAX_PIN_NUM);
+	dartlead_assert(
+		(pin_output_speed >= GPIO::output_speed::low) &&
+		(pin_output_speed <= GPIO::output_speed::very_high)
+	);
 
 	GPIO::status ret = GPIO::status::invalid_pin_output_speed;
 
@@ -231,7 +261,7 @@ GPIO::status GPIO::pin::set_output_speed(output_speed const pin_output_speed) {
 			ret = GPIO::status::ok;
 			break;
 		default:
-			//WTF;
+			dartlead_WTF;
 			break;
 	}
 
@@ -241,10 +271,13 @@ GPIO::status GPIO::pin::set_output_speed(output_speed const pin_output_speed) {
 	return ret;
 }
 
+/**
+ * @details Updates the private member and the GPIO pin's port's PUPDR register with the requested pull.
+ */
 GPIO::status GPIO::pin::set_pull(pull const pin_pull) {
-	//configASSERT(GPIOx != NULL);
-	//configASSERT(pin <= GPIO_MAX_PIN_NUM);
-	//configASSERT((pull >= GPIO_pull_none) && (pull <= GPIO_pull_down));
+	dartlead_assert(port_base_addr != NULL);
+	dartlead_assert(number <= GPIO_MAX_PIN_NUM);
+	dartlead_assert((pin_pull >= GPIO::pull::none) && (pin_pull <= GPIO::pull::down));
 
 	GPIO::status ret = GPIO::status::invalid_pin_pull;
 
@@ -259,7 +292,7 @@ GPIO::status GPIO::pin::set_pull(pull const pin_pull) {
 			port_base_addr->PUPDR = (port_base_addr->PUPDR & ~(0x3UL << (number * 2))) | (0x2UL << (number * 2));
 			break;
 		default:
-			//WTF;
+			dartlead_WTF;
 			break;
 	}
 
@@ -270,21 +303,23 @@ GPIO::status GPIO::pin::set_pull(pull const pin_pull) {
 }
 
 /**
- * @note  The lock sequence is as follows (where LCKR[15:0] contains a '1' in the bit position corresponding to
- *        pin number being locked):
- *        (1) Write LCKR[16] = '1' + LCKR[15:0]
- *        (2) Write LCKR[16] = '0' + LCKR[15:0]
- *        (3) Write LCKR[16] = '1`' + LCKR[15:0]
- *        (4) Read LCKR
- *        (5) Optionally read LCKR to verify LCKR[16] == 1 (confirms that the LOCK is active)
- * @note  The lock sequence can only be performed using word access to the GPIOx_LCKR register due to the fact that
- *        GPIOx_LCKR bit 16 has to be set at the same time as the [15:0] bits.
- * @note  This function is forcibly optimized at -O0 to ensure that the correct lock sequence is respected and not
- *        optimized out.
+ * @details Locks the pin's configuration by applying the correct lock sequence to the LCKR register and updates
+ *          the private member.
+ * @note    The lock sequence is as follows (where LCKR[15:0] contains a '1' in the bit position corresponding to
+ *          pin number being locked):
+ *          (1) Write LCKR[16] = '1' + LCKR[15:0]
+ *          (2) Write LCKR[16] = '0' + LCKR[15:0]
+ *          (3) Write LCKR[16] = '1`' + LCKR[15:0]
+ *          (4) Read LCKR
+ *          (5) Optionally read LCKR to verify LCKR[16] == 1 (confirms that the LOCK is active)
+ * @note    The lock sequence can only be performed using word access to the GPIOx_LCKR register due to the fact
+ *          that GPIOx_LCKR bit 16 has to be set at the same time as the [15:0] bits.
+ * @note    This function is forcibly optimized at -O0 to ensure that the correct lock sequence is respected and
+ *          not optimized out.
  */
 GPIO::status __attribute__((optimize("O0"))) GPIO::pin::lock_config() {
-	//configASSERT(GPIOx != NULL);
-	//configASSERT(pin <= GPIO_MAX_PIN_NUM);
+	dartlead_assert(port_base_addr != NULL);
+	dartlead_assert(number <= GPIO_MAX_PIN_NUM);
 
 	uint32_t     LCKR_15_0 = (port_base_addr->LCKR & 0xFFFFUL) | (0x1UL << number);
 	GPIO::status ret       = GPIO::status::lock_failed;
@@ -306,15 +341,21 @@ GPIO::status __attribute__((optimize("O0"))) GPIO::pin::lock_config() {
 	return ret;
 }
 
+/**
+ * @details Checks whether the pin is locked by reading from the private member.
+ */
 GPIO::status GPIO::pin::is_locked(bool &pin_locked)
 {
 	pin_locked = locked;
 	return GPIO::status::ok;
 }
 
+/**
+ * @details Writes a value to the pin via the ODR register.
+ */
 GPIO::status GPIO::pin::write(uint32_t const val) {
-	//configASSERT(GPIOx != NULL);
-	//configASSERT(pin <= GPIO_MAX_PIN_NUM);
+	dartlead_assert(port_base_addr != NULL);
+	dartlead_assert(number <= GPIO_MAX_PIN_NUM);
 
 	if (val) {
 		port_base_addr->ODR |=   0x1UL << number;
@@ -325,9 +366,12 @@ GPIO::status GPIO::pin::write(uint32_t const val) {
 	return GPIO::status::ok;
 }
 
+/**
+ * @details The atomic nature of the write comes by writing to the BSRR register.
+ */
 GPIO::status GPIO::pin::write_atomic(uint32_t const val) {
-	//configASSERT(GPIOx != NULL);
-	//configASSERT(pin <= GPIO_MAX_PIN_NUM);
+	dartlead_assert(port_base_addr != NULL);
+	dartlead_assert(number <= GPIO_MAX_PIN_NUM);
 
 	uint8_t const clr_bit_offset = 16;
 
@@ -340,9 +384,12 @@ GPIO::status GPIO::pin::write_atomic(uint32_t const val) {
 	return GPIO::status::ok;
 }
 
+/**
+ * @details Reads the value from the pin via the IDR register.
+ */
 GPIO::status GPIO::pin::read(uint32_t &val) {
-	//configASSERT(GPIOx != NULL);
-	//configASSERT(pin <= GPIO_MAX_PIN_NUM);
+	dartlead_assert(port_base_addr != NULL);
+	dartlead_assert(number <= GPIO_MAX_PIN_NUM);
 
 	if (port_base_addr->IDR & (0x1UL << number)) {
 		val = 1;
@@ -353,9 +400,12 @@ GPIO::status GPIO::pin::read(uint32_t &val) {
 	return GPIO::status::ok;
 }
 
+/**
+ * @details Toggles the value of the pin via the ODR register.
+ */
 GPIO::status GPIO::pin::toggle() {
-	//configASSERT(GPIOx != NULL);
-	//configASSERT(pin <= GPIO_MAX_PIN_NUM);
+	dartlead_assert(port_base_addr != NULL);
+	dartlead_assert(number <= GPIO_MAX_PIN_NUM);
 
 	port_base_addr->ODR ^= 0x1UL << number;
 
