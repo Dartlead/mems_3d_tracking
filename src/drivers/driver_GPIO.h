@@ -91,14 +91,14 @@ namespace GPIO
 
 	class pin {
 	private:
-		port           port_member;         /**< GPIO port of the pin                      */
-		GPIO_TypeDef * port_base_addr;      /**< Base address of the GPIO port             */
-		uint8_t        number;              /**< Pin number                                */
-		mode           mode_member;         /**< Mode of the pin                           */
-		output_type    output_type_member;  /**< Output type of the pin                    */
-		output_speed   output_speed_member; /**< Output speed of the pin                   */
-		pull           pull_member;         /**< Pull of the pin                           */
-		bool           locked;              /**< Whether the pin's configuration is locked */
+		port           m_port;           /**< GPIO port of the pin                      */
+		GPIO_TypeDef * m_port_base_addr; /**< Base address of the GPIO port             */
+		uint8_t        m_number;         /**< Pin number                                */
+		mode           m_mode;           /**< Mode of the pin                           */
+		output_type    m_output_type;    /**< Output type of the pin                    */
+		output_speed   m_output_speed;   /**< Output speed of the pin                   */
+		pull           m_pull;           /**< Pull of the pin                           */
+		bool           m_locked;         /**< Whether the pin's configuration is locked */
 
 	public:
 		pin(port const pin_port, uint8_t const pin_number);

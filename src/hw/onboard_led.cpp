@@ -3,16 +3,12 @@
 #include "dartlead_assert.h"
 #include <cstddef>
 
-//static GPIO::pin * PB0  = NULL;
-//static GPIO::pin * PB7  = NULL;
-//static GPIO::pin * PB14 = NULL;
-
 /**
  * @note Green LED is connected to PB0.
  * @note Blue LED is connected to PB7.
  * @note Red LED is connected to PB14.
  */
-onboard_LED::onboard_LED(LED::color const color) {
+//onboard_LED::onboard_LED(LED::color const color) {
 	//switch (color) {
 	//	case LED::color::green:
 	//		if (PB0 != NULL) {
@@ -43,10 +39,10 @@ onboard_LED::onboard_LED(LED::color const color) {
 	//		dartlead_WTF;
 	//		break;
 	//}
-	return;
-}
+	//return;
+//}
 
-onboard_LED::~onboard_LED() {
+//onboard_LED::~onboard_LED() {
 	//switch (color_member) {
 	//	case LED::color::green:
 	//		delete PB0;
@@ -61,10 +57,10 @@ onboard_LED::~onboard_LED() {
 	//		dartlead_WTF;
 	//		break;
 	//}
-	return;
-}
+	//return;
+//}
 
-LED::status onboard_LED::turn_on() {
+LED::status LED::onboard_LED::turn_on() {
 	//switch (color_member) {
 	//	case LED::color::green:
 	//		PB0->write(1);
@@ -82,7 +78,7 @@ LED::status onboard_LED::turn_on() {
 	return LED::status::ok;
 }
 
-LED::status onboard_LED::turn_off() {
+LED::status LED::onboard_LED::turn_off() {
 	//switch (color_member) {
 	//	case LED::color::green:
 	//		PB0->write(0);
@@ -100,7 +96,7 @@ LED::status onboard_LED::turn_off() {
 	return LED::status::ok;
 }
 
-LED::status onboard_LED::toggle() {
+LED::status LED::onboard_LED::toggle() {
 	//switch (color_member) {
 	//	case LED::color::green:
 	//		PB0->toggle();
