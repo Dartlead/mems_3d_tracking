@@ -101,20 +101,95 @@ namespace GPIO
 		bool           m_locked;         /**< Whether the pin's configuration is locked */
 
 	public:
+		/**
+		 * @brief GPIO pin constructor.
+		 * @param [in] pin_port
+		 *    The port associated with the pin.
+		 * @param [in] pin_number
+		 *    The number of the pin being constructed.
+		 */
 		pin(port const pin_port, uint8_t const pin_number);
+
+		/**
+		 * @brief GPIO pin destructor.
+		 */
 		~pin();
 
+		/**
+		 * @brief Sets the mode of the GPIO pin.
+		 * @param [in] pin_mode
+		 *    The requested mode of the pin.
+		 * @return GPIO pin status.
+		 */
 		status set_mode(mode const pin_mode);
+
+		/**
+		 * @brief Sets the output type of the GPIO pin.
+		 * @param [in] pin_output_type
+		 *    The output type of the pin.
+		 * @return GPIO pin status.
+		 */
 		status set_output_type(output_type const pin_output_type);
+
+		/**
+		 * @brief Sets the output speed of the GPIO pin.
+		 * @param [in] pin_output_speed
+		 *    The output speed of the pin.
+		 * @return GPIO pin status.
+		 */
 		status set_output_speed(output_speed const pin_output_speed);
+
+		/**
+		 * @brief Sets the pull of the GPIO pin.
+		 * @param [in] pin_pull
+		 *    The pull of the pin.
+		 * @return GPIO pin status.
+		 */
 		status set_pull(pull const pin_pull);
 
+		/**
+		 * @brief Locks the GPIO pin configuration.
+		 * @return GPIO pin status.
+		 */
 		status lock_config();
+
+		/**
+		 * @brief Checks if the GPIO pin's configuration is locked.
+		 * @param [inout] pin_locked
+		 *    Whether the pin's configuration is locked or not.
+		 * @return GPIO pin status.
+		 */
 		status is_locked(bool &pin_locked);
 
+		/**
+		 * @brief Writes a value to the GPIO pin.
+		 * @param [in] val
+		 *    The value to write to the GPIO pin.
+		 * @return GPIO pin status.
+		 */
 		status write(uint32_t const val);
+
+		/**
+		 * @brief Writes a value to the GPIO pin atomically.
+		 * @param [in] val
+		 *    The value to write to the GPIO pin.
+		 * @return GPIO pin status.
+		 */
 		status write_atomic(uint32_t const val);
+
+		/**
+		 * @brief Writes a value to the GPIO pin atomically.
+		 * @brief Reads the current state of the GPIO pin.
+		 * @param [inout] val
+		 *    The current state of the GPIO pin.
+		 * @return GPIO pin status.
+		 */
 		status read(uint32_t &val);
+
+		/**
+		 * @brief Toggles the GPIO pin.
+		 * @return GPIO pin status.
+		 */
 		status toggle();
 	};
 }

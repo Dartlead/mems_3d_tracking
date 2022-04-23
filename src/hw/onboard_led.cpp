@@ -31,6 +31,10 @@ uint8_t LED::onboard_LED::get_pin(LED::color const LED_color) {
 	return pin;
 }
 
+/**
+ * @details All onboard LEDs should be tied to GPIO pins that are configured as output, push-pull
+ *          with a low switching speed.
+ */
 LED::onboard_LED::onboard_LED(LED::color LED_color) : m_pin(GPIO::port::B, get_pin(LED_color)) {
 	switch (LED_color) {
 		case LED::color::red:
@@ -60,23 +64,56 @@ LED::onboard_LED::onboard_LED(LED::color LED_color) : m_pin(GPIO::port::B, get_p
 	}
 }
 
+/**
+ * @details Calls the destructor of the GPIO pin.
+ */
 LED::onboard_LED::~onboard_LED() {
 	m_pin.~pin();
 }
 
+/**
+ * @details Calls the write method of the GPIO pin.
+ */
 LED::status LED::onboard_LED::turn_on() {
-	m_pin.write(1);
-	return LED::status::ok;
+	LED::status ret;
+
+	if (GPIO::status::ok == m_pin.write(1)) {
+		ret = LED::status::ok;
+	} else {
+		ret = LED::status::error;
+	}
+
+	return ret;
 }
 
+/**
+ * @details Calls the write method of the GPIO pin.
+ */
 LED::status LED::onboard_LED::turn_off() {
-	m_pin.write(0);
-	return LED::status::ok;
+	LED::status ret;
+
+	if (GPIO::status::ok == m_pin.write(0)) {
+		ret = LED::status::ok;
+	} else {
+		ret = LED::status::error;
+	}
+
+	return ret;
 }
 
+/**
+ * @details Calls the toggle method of the GPIO pin.
+ */
 LED::status LED::onboard_LED::toggle() {
-	m_pin.toggle();
-	return LED::status::ok;
+	LED::status ret;
+
+	if (GPIO::status::ok == m_pin.toggle()) {
+		ret = LED::status::ok;
+	} else {
+		ret = LED::status::error;
+	}
+
+	return ret;
 }
 
 /* EOF */

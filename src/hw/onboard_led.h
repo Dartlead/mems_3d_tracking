@@ -37,11 +37,34 @@ namespace LED
 		static uint8_t get_pin(LED::color LED_color);
 
 	public:
+		/**
+		 * @brief onboard_LED constructor.
+		 * @param [in] LED_color
+		 *    The color of the onboard LED to initialize.
+		 */
 		onboard_LED(LED::color const LED_color);
+
+		/**
+		 * @brief onboard_LED destructor.
+		 */
 		~onboard_LED();
 
+		/**
+		 * @brief Turns on an onboard LED.
+		 * @return onboard LED status.
+		 */
 		LED::status turn_on();
+
+		/**
+		 * @brief Turns off an onboard LED.
+		 * @return onboard LED status.
+		 */
 		LED::status turn_off();
+
+		/**
+		 * @brief Toggles an onboard LED.
+		 * @return onboard LED status.
+		 */
 		LED::status toggle();
 	};
 }
