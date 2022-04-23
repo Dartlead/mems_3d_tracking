@@ -8,40 +8,23 @@
 #include "driver_GPIO.h"
 #include "onboard_led.h"
 
+/**
+ * @brief Toggles all three onboard LEDs every 200 ms.
+ */
 static void __attribute__((section(".text.fast_text"))) LED_toggle_task(void * parameter) {
 	TickType_t const delay_200ms    = pdMS_TO_TICKS(200UL);
 	TickType_t       last_wake_time = xTaskGetTickCount();
 
-	//onboard_LED blue_led(LED::Color::blue);
-	//blue_led.turn_on();
-
-	/* Init green LED */
-	GPIO::pin PB0(GPIO::port::B, (uint8_t)0);
-	PB0.set_mode(GPIO::mode::output);
-	PB0.set_output_type(GPIO::output_type::push_pull);
-	PB0.set_output_speed(GPIO::output_speed::low);
-	PB0.set_pull(GPIO::pull::none);
-
-	/* Init blue LED */
-	GPIO::pin PB7(GPIO::port::B, (uint8_t)7);
-	PB7.set_mode(GPIO::mode::output);
-	PB7.set_output_type(GPIO::output_type::push_pull);
-	PB7.set_output_speed(GPIO::output_speed::low);
-	PB7.set_pull(GPIO::pull::none);
-
-	/* Init red LED */
-	GPIO::pin PB14(GPIO::port::B, (uint8_t)14);
-	PB14.set_mode(GPIO::mode::output);
-	PB14.set_output_type(GPIO::output_type::push_pull);
-	PB14.set_output_speed(GPIO::output_speed::low);
-	PB14.set_pull(GPIO::pull::none);
+	LED::onboard_LED red_led(LED::color::red);
+	LED::onboard_LED green_led(LED::color::green);
+	LED::onboard_LED blue_led(LED::color::blue);
 
 	while (1) {
 		vTaskDelayUntil(&last_wake_time, delay_200ms);
 
-		PB0.toggle();
-		PB7.toggle();
-		PB14.toggle();
+		red_led.toggle();
+		green_led.toggle();
+		blue_led.toggle();
 	}
 }
 

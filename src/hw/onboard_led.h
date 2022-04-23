@@ -6,50 +6,43 @@
 
 namespace LED
 {
+	/**
+	 * @enum Enumeration of status return values for all onboard_LED methods.
+	 */
 	enum class status : uint8_t {
-		  ok
-		, error
+		  ok    /**< No issues, method operated successfully */
+		, error /**< Generalized error                       */
 	};
 
+	/**
+	 * @enum Enumeration of different onboard LED colors.
+	 */
 	enum class color : uint8_t {
-		  red
-		, green
-		, blue
+		  red   /**< Onboard red LED   */
+		, green /**< Onboard green LED */
+		, blue  /**< Onboard blue LED  */
 	};
 
 	class onboard_LED {
+	private:
+		GPIO::pin m_pin;   /**< The GPIO pin object tied to the particular onboard LED */
+		color     m_color; /**< The color of the onboard LED                           */
+
+		/**
+		 * @brief Gets the pin number for the GPIO of the onboard LED.
+		 * @param [in] LED_color
+		 *    The onboard LED whose pin number is being requested.
+		 * @return The pin number.
+		 */
+		static uint8_t get_pin(LED::color LED_color);
+
 	public:
-		static GPIO::port foo(LED::color LED_color) {
-			if (LED_color == LED::color::blue) {
-				return GPIO::port::B;
-			} else {
-				return GPIO::port::A;
-			}
-		}
-		static uint8_t foo2(LED::color LED_color) {
-			if (LED_color == LED::color::blue) {
-				return 7;
-			} else {
-				return 6;
-			}
-		}
-
-
-		onboard_LED(LED::color LED_color) : pin(foo(LED_color), foo2(LED_color)) {
-			if (LED_color == LED::color::blue) {
-				pin.set_mode(GPIO::mode::output);
-				pin.set_output_type(GPIO::output_type::push_pull);
-				pin.set_output_speed(GPIO::output_speed::low);
-				pin.set_pull(GPIO::pull::none);
-			}
-		}
+		onboard_LED(LED::color const LED_color);
+		~onboard_LED();
 
 		LED::status turn_on();
 		LED::status turn_off();
 		LED::status toggle();
-
-	private:
-		GPIO::pin pin;
 	};
 }
 
