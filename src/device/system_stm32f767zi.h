@@ -7,31 +7,64 @@
 extern "C" {
 #endif
 
-/*! Pound defines for initial clock behavior.
- */
-#define DEFAULT_SYSTEM_CLOCK_FREQ 16000000UL //!# (HSI at 16 MHz)
-#define DEFAULT_AHB_CLOCK_FREQ    16000000UL //!# System clock not divided
-#define DEFAULT_APB1_CLOCK_FREQ   16000000UL //!# AHB clock not divided
-#define DEFAULT_APB2_CLOCK_FREQ   16000000UL //!# AHB clock not divided
+/* ++++++++++++++++++++++++++++++++++++++ Global Variables ++++++++++++++++++++++++++++++++++++++ */
 
-/*! System's clock frequencies in hertz.
+/**
+ * @brief System core clock frequency.
+ * @note  This global variable is not prefixed because it is a CMSIS-style variable.
  */
 extern uint32_t SystemCoreClock;
-extern uint32_t SystemAHBClock;  //!# AHB domain clock is shared by both AHB buses
+
+/**
+ * @brief AHB bus clock frequency.
+ * @note  AHB domain clock is shared by both AHB buses.
+ * @note  This global variable is not prefixed because it is a CMSIS-style variable.
+ */
+extern uint32_t SystemAHBClock;
+
+/**
+ * @brief APB1 bus clock frequency.
+ * @note  This global variable is not prefixed because it is a CMSIS-style variable.
+ */
 extern uint32_t SystemAPB1Clock;
+
+/**
+ * @brief APB2 bus clock frequency.
+ * @note  This global variable is not prefixed because it is a CMSIS-style variable.
+ */
 extern uint32_t SystemAPB2Clock;
 
-/*! Setup the microcontroller system.
+/* ------------------------------------ End Global Variables ------------------------------------ */
+
+
+
+/* ++++++++++++++++++++++++++++++++++++++ Public Functions ++++++++++++++++++++++++++++++++++++++ */
+
+/**
+ * @brief   Initializes the CPU's system, AHB, APB1 and APB2 clocks.
+ * @details Attempts to set the:
+ *             sysclk   -> 216 MHz via the main PLL's PLLP output
+ *             AHB clk  -> 216 MHz
+ *             APB1 clk -> 27 MHz
+ *             APB2 clk -> 54 MHz
  *
- * @brief Initializes the system and updates the SystemCoreClock variable.
+ *          Should these frequencies be unobtainable (for whateve reason), the clock frequencies are
+ *          set to their default values of:
+ *             sysclk   -> 16 MHz via the HSI oscillator
+ *             AHB clk  -> 16 MHz
+ *             APB1 clk -> 16 MHz
+ *             APB2 clk -> 16 MHz
+ * @note    This function also sets the CMSIS-style global clock frequency variables.
  */
 void SystemInit(void);
 
-/*! Updates the SystemCoreClock variable.
- *
+/**
  * @brief Updates the SystemCoreClock with the current core clock retrieved from cpu registers.
+ * @note  Currently not implemented.
  */
 void SystemCoreClockUpdate(void);
+
+/* ------------------------------------ End Public Functions ------------------------------------ */
 
 #ifdef __cplusplus
 }

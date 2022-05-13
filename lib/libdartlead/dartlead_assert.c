@@ -1,6 +1,8 @@
 #include "dartlead_assert.h"
 #include "stm32f767zi.h"
 
+/* ++++++++++++++++++++++++++++++++++++++ Public Functions ++++++++++++++++++++++++++++++++++++++ */
+
 /**
  * @details The red LED is connected to PB14. Thus PB14 needs to be configured as a barebones
  *          output pin and afterwards repeatedly blink the LED. This function is forcefully
@@ -22,5 +24,7 @@ void __attribute__((optimize("O0"))) __dartlead_assert(void) {
 		while (delay_tick++ < 10000000);
 	}
 }
+
+/* ------------------------------------ End Public Functions ------------------------------------ */
 
 /* EOF */

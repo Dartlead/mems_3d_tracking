@@ -34,6 +34,8 @@ uint8_t LED::onboard_LED::get_pin(LED::color const LED_color) {
 /**
  * @details All onboard LEDs should be tied to GPIO pins that are configured as output, push-pull
  *          with a low switching speed.
+ * @note    No need to assert the input LED_color is within range because the get_pin() function
+ *          will do it for us.
  */
 LED::onboard_LED::onboard_LED(LED::color LED_color) : m_pin(GPIO::port::B, get_pin(LED_color)) {
 	switch (LED_color) {

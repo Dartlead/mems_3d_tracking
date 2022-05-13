@@ -9,6 +9,9 @@
  *          relevant members with their correct values.
  */
 GPIO::pin::pin(port const pin_port, uint8_t const pin_number) {
+	dartlead_assert((pin_port >= GPIO::port::A) && (pin_port <= GPIO::port::K));
+	dartlead_assert(pin_number <= GPIO_MAX_PIN_NUM);
+
 	/* Enable the peripheral clock to the GPIO port and update private members */
 	switch (pin_port) {
 		case GPIO::port::A:

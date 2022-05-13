@@ -8,9 +8,11 @@
 extern "C" {
 #endif
 
+/* +++++++++++++++++++++++++++++++++++++++++++ Macros +++++++++++++++++++++++++++++++++++++++++++ */
+
 /**
- * @brief FreeRTOS portable macro for assert that disables all interrupts before entering the custom assert
- *        function.
+ * @brief FreeRTOS portable macro for assert that disables all interrupts before entering the
+ *        custom assert function.
  */
 #define dartlead_assert(EXPR) \
 	do { \
@@ -21,10 +23,18 @@ extern "C" {
 	} while (0)
 #define dartlead_WTF dartlead_assert(0)
 
+/* ----------------------------------------- End Macros ----------------------------------------- */
+
+
+
+/* ++++++++++++++++++++++++++++++++++++++ Public Functions ++++++++++++++++++++++++++++++++++++++ */
+
 /**
  * @brief Custom assert that will flash the onboard RED LED and spin the core indefinitely.
  */
 void __dartlead_assert(void);
+
+/* ------------------------------------ End Public Functions ------------------------------------ */
 
 #ifdef __cplusplus
 }
