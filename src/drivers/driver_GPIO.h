@@ -1,240 +1,198 @@
 #ifndef DRIVER_GPIO_H
 #define DRIVER_GPIO_H
 
-#include <stdbool.h>
+#include <cstdint>
 #include "stm32f767zi.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+namespace GPIO
+{
+	/**
+	 * @enum Enumeration of all available GPIO ports.
+	 */
+	enum class port : uint8_t {
+		  A /**< GPIO Port A */
+		, B /**< GPIO Port B */
+		, C /**< GPIO Port C */
+		, D /**< GPIO Port D */
+		, E /**< GPIO Port E */
+		, F /**< GPIO Port F */
+		, G /**< GPIO Port G */
+		, H /**< GPIO Port H */
+		, I /**< GPIO Port I */
+		, J /**< GPIO Port J */
+		, K /**< GPIO Port K */
+	};
 
-/* ============================================================================================================= */
-/* GPIO Configuration Enum Options                                                                               */
-/* ============================================================================================================= */
-/*! Enumeration of GPIO pin modes.
- */
-typedef enum GPIO_mode {
-	  GPIO_mode_alt_func_0  = 0
-	, GPIO_mode_alt_func_1  = 1
-	, GPIO_mode_alt_func_2  = 2
-	, GPIO_mode_alt_func_3  = 3
-	, GPIO_mode_alt_func_4  = 4
-	, GPIO_mode_alt_func_5  = 5
-	, GPIO_mode_alt_func_6  = 6
-	, GPIO_mode_alt_func_7  = 7
-	, GPIO_mode_alt_func_8  = 8
-	, GPIO_mode_alt_func_9  = 9
-	, GPIO_mode_alt_func_10 = 10
-	, GPIO_mode_alt_func_11 = 11
-	, GPIO_mode_alt_func_12 = 12
-	, GPIO_mode_alt_func_13 = 13
-	, GPIO_mode_alt_func_14 = 14
-	, GPIO_mode_alt_func_15 = 15
-	, GPIO_mode_input       = 16
-	, GPIO_mode_output      = 17
-	, GPIO_mode_analog      = 18
-} GPIO_mode_t;
+	/**
+	 * @enum Enumeration of all possible GPIO pin modes.
+	 */
+	enum class mode : uint8_t {
+		  alt_func_0  /**< Alternate Function Mode 0        */
+		, alt_func_1  /**< Alternate Function Mode 1        */
+		, alt_func_2  /**< Alternate Function Mode 2        */
+		, alt_func_3  /**< Alternate Function Mode 3        */
+		, alt_func_4  /**< Alternate Function Mode 4        */
+		, alt_func_5  /**< Alternate Function Mode 5        */
+		, alt_func_6  /**< Alternate Function Mode 6        */
+		, alt_func_7  /**< Alternate Function Mode 7        */
+		, alt_func_8  /**< Alternate Function Mode 8        */
+		, alt_func_9  /**< Alternate Function Mode 9        */
+		, alt_func_10 /**< Alternate Function Mode 10       */
+		, alt_func_11 /**< Alternate Function Mode 11       */
+		, alt_func_12 /**< Alternate Function Mode 12       */
+		, alt_func_13 /**< Alternate Function Mode 13       */
+		, alt_func_14 /**< Alternate Function Mode 14       */
+		, alt_func_15 /**< Alternate Function Mode 15       */
+		, input       /**< Input Mode                       */
+		, output      /**< Output Mode                      */
+		, analog      /**< High-impedance Analog-Input Mode */
+	};
 
-/*! Enumeration of GPIO pin output types.
- */
-typedef enum GPIO_output_type {
-	  GPIO_output_type_push_pull  = 0
-	, GPIO_output_type_open_drain = 1
-} GPIO_output_type_t;
+	/**
+	 * @enum Enumeration of different output buffer modes when pin is in Output Mode.
+	 */
+	enum class output_type : uint8_t {
+		  push_pull  /**< Push-Pull  */
+		, open_drain /**< Open-Drain */
+	};
 
-/*! Enumeration of GPIO pin output speeds.
- */
-typedef enum GPIO_output_speed {
-	  GPIO_output_speed_low       = 0
-	, GPIO_output_speed_medium    = 1
-	, GPIO_output_speed_high      = 2
-	, GPIO_output_speed_very_high = 3
-} GPIO_output_speed_t;
+	/**
+	 * @enum Enumeration of maximum toggling frequencies for pins.
+	 * @details View Table 67. I/O AC characteristics in the datasheet (DS11532 Rev 7).
+	 */
+	enum class output_speed : uint8_t {
+		  low       /**< Maximum toggling speed of 8 MHz (depending on V_DD and C_L)   */
+		, medium    /**< Maximum toggling speed of 50 MHz (depending on V_DD and C_L)  */
+		, high      /**< Maximum toggling speed of 100 MHz (depending on V_DD and C_L) */
+		, very_high /**< Maximum toggling speed of 180 MHz (depending on V_DD and C_L) */
+	};
 
-/*! Enumeration of GPIO pin pulls.
- */
-typedef enum GPIO_pull {
-	  GPIO_pull_none = 0
-	, GPIO_pull_up   = 1
-	, GPIO_pull_down = 2
-} GPIO_pull_t;
+	/**
+	 * @enum Enumeration of internal weak pull resistors options for pins.
+	 * @details View Table 65. I/O static characteristics in the datasheet (DS11532 Rev 7).
+	 */
+	enum class pull : uint8_t {
+		  none /**< No internal pull-up or pull-down resistor   */
+		, up   /**< 50/14 kohm weak internal pull-up resistor   */
+		, down /**< 50/14 kohm weak internal pull-down resistor */
+	};
 
-/* ============================================================================================================= */
-/* GPIO Configuration Struct                                                                                     */
-/* ============================================================================================================= */
-/*! Structure containing GPIO pin configuration options.
- */
-typedef struct GPIO_config {
-	GPIO_mode_t         GPIO_mode;
-	GPIO_output_type_t  GPIO_output_type;
-	GPIO_output_speed_t GPIO_output_speed;
-	GPIO_pull_t         GPIO_pull;
-} GPIO_config_t;
+	/**
+	 * @enum Enumeration of status return values for all pin methods.
+	 */
+	enum class status : uint8_t {
+		  ok                       /**< No issues, method operated successfully */
+		, invalid_pin_mode         /**< Invalid pin mode                        */
+		, invalid_pin_output_type  /**< Invalid pin output type                 */
+		, invalid_pin_output_speed /**< Invalid pin output speed                */
+		, invalid_pin_pull         /**< Invalid pin pull                        */
+		, lock_failed              /**< Failed to lock the pin's configuration  */
+	};
 
-/* ============================================================================================================= */
-/* GPIO Configuration Functions                                                                                  */
-/* ============================================================================================================= */
-/*! Gets the default configuration for a GPIO pin.
- *
- * @brief Default GPIO pin configuration is an output, push-pull pin with no pull-up/pull-down resistors at low
- *        switching speed.
- *
- * @param config
- *    (input/output) The default configuration for a GPIO pin.
- */
-void GPIO_get_default_config(GPIO_config_t * const config);
+	class pin {
+	private:
+		port           m_port;           /**< GPIO port of the pin                      */
+		GPIO_TypeDef * m_port_base_addr; /**< Base address of the GPIO port             */
+		uint8_t        m_number;         /**< Pin number                                */
+		mode           m_mode;           /**< Mode of the pin                           */
+		output_type    m_output_type;    /**< Output type of the pin                    */
+		output_speed   m_output_speed;   /**< Output speed of the pin                   */
+		pull           m_pull;           /**< Pull of the pin                           */
+		bool           m_locked;         /**< Whether the pin's configuration is locked */
 
-/*! Initializes a GPIO pin.
- *
- * @param GPIOx
- *    (input) The GPIO port. See device/registers/stm32f767zi_registers_GPIO.h for options.
- * @param pin
- *    (input) The pin number to configure (must be between 0 and 15, inclusive).
- * @param config
- *    (input) The configuration for the pin being configured.
- */
-void GPIO_init(GPIO_TypeDef * const GPIOx
-	, uint32_t const pin
-	, GPIO_config_t const * const config
-);
+	public:
+		/**
+		 * @brief GPIO pin constructor.
+		 * @param [in] pin_port
+		 *    The port associated with the pin.
+		 * @param [in] pin_number
+		 *    The number of the pin being constructed.
+		 */
+		pin(port const pin_port, uint8_t const pin_number);
 
-/*! Sets the mode of the GPIO pin.
- *
- * @param GPIOx
- *    (input) The GPIO port. See device/registers/stm32f767zi_registers_GPIO.h for options.
- * @param pin
- *    (input) The pin number to configure (must be between 0 and 15, inclusive).
- * @param mode
- *    (input) The desired mode for the GPIO pin.
- */
-void GPIO_set_mode(GPIO_TypeDef * const GPIOx
-	, uint32_t const pin
-	, GPIO_mode_t const mode
-);
+		/**
+		 * @brief GPIO pin destructor.
+		 */
+		~pin();
 
-/*! Sets the output type of the GPIO pin.
- *
- * @param GPIOx
- *    (input) The GPIO port. See device/registers/stm32f767zi_registers_GPIO.h for options.
- * @param pin
- *    (input) The pin number to configure (must be between 0 and 15, inclusive).
- * @param output_type
- *    (input) The desired output type for the GPIO pin.
- */
-void GPIO_set_output_type(GPIO_TypeDef * const GPIOx
-	, uint32_t const pin
-	, GPIO_output_type_t const output_type
-);
+		/**
+		 * @brief Sets the mode of the GPIO pin.
+		 * @param [in] pin_mode
+		 *    The requested mode of the pin.
+		 * @return GPIO pin status.
+		 */
+		status set_mode(mode const pin_mode);
 
-/*! Sets the output speed of the GPIO pin.
- *
- * @param GPIOx
- *    (input) The GPIO port. See device/registers/stm32f767zi_registers_GPIO.h for options.
- * @param pin
- *    (input) The pin number to configure (must be between 0 and 15, inclusive).
- * @param output_speed
- *    (input) The desired output speed for the GPIO pin.
- */
-void GPIO_set_output_speed(GPIO_TypeDef * const GPIOx
-	, uint32_t const pin
-	, GPIO_output_speed_t const output_speed
-);
+		/**
+		 * @brief Sets the output type of the GPIO pin.
+		 * @param [in] pin_output_type
+		 *    The output type of the pin.
+		 * @return GPIO pin status.
+		 */
+		status set_output_type(output_type const pin_output_type);
 
-/*! Sets the pin pull of the GPIO pin.
- *
- * @param GPIOx
- *    (input) The GPIO port. See device/registers/stm32f767zi_registers_GPIO.h for options.
- * @param pin
- *    (input) The pin number to configure (must be between 0 and 15, inclusive).
- * @param pull
- *    (input) The presence (if any) of pull-up/pull-down resistors for the pin.
- */
-void GPIO_set_pull(GPIO_TypeDef * const GPIOx
-	, uint32_t const pin
-	, GPIO_pull_t const pull
-);
+		/**
+		 * @brief Sets the output speed of the GPIO pin.
+		 * @param [in] pin_output_speed
+		 *    The output speed of the pin.
+		 * @return GPIO pin status.
+		 */
+		status set_output_speed(output_speed const pin_output_speed);
 
-/*! Locks a GPIO pin's configuration.
- *
- * @brief Locks the configuration of the pin until the next MCU reset or peripheral reset.
- *
- * @param GPIOx
- *    (input) The GPIO port. See device/registers/stm32f767zi_registers_GPIO.h for options.
- * @param pin
- *    (input) The pin number to lock (must be between 0 and 15, inclusive).
- * @return 'true' if the lock operation was successful, 'false' otherwise.
- */
-bool GPIO_lock(GPIO_TypeDef * const GPIOx
-	, uint32_t const pin
-);
+		/**
+		 * @brief Sets the pull of the GPIO pin.
+		 * @param [in] pin_pull
+		 *    The pull of the pin.
+		 * @return GPIO pin status.
+		 */
+		status set_pull(pull const pin_pull);
 
-/*! Checks if a GPIO pin is locked.
- *
- * @param GPIOx
- *    (input) The GPIO port. See device/registers/stm32f767zi_registers_GPIO.h for options.
- * @param pin
- *    (input) The pin number to lock (must be between 0 and 15, inclusive).
- */
-bool GPIO_is_locked(GPIO_TypeDef * const GPIOx
-	, uint32_t const pin
-);
+		/**
+		 * @brief Locks the GPIO pin configuration.
+		 * @return GPIO pin status.
+		 */
+		status lock_config();
 
-/* ============================================================================================================= */
-/* GPIO Access Functions                                                                                         */
-/* ============================================================================================================= */
-/*! Writes to a GPIO output pin.
- *
- * @param GPIOx
- *    (input) The GPIO port. See device/registers/stm32f767zi_registers_GPIO.h for options.
- * @param pin
- *    (input) The pin number to write to (must be between 0 and 15, inclusive).
- * @param val
- *    (input) The value to write to the pin (must be 0 or 1).
- */
-void GPIO_write(GPIO_TypeDef * const GPIOx
-	, uint32_t const pin
-	, uint32_t const val
-);
+		/**
+		 * @brief Checks if the GPIO pin's configuration is locked.
+		 * @param [inout] pin_locked
+		 *    Whether the pin's configuration is locked or not.
+		 * @return GPIO pin status.
+		 */
+		status is_locked(bool &pin_locked);
 
-/*! Atomically writes to a GPIO output pin.
- *
- * @param GPIOx
- *    (input) The GPIO port. See device/registers/stm32f767zi_registers_GPIO.h for options.
- * @param pin
- *    (input) The pin number to write to (must be between 0 and 15, inclusive).
- * @param val
- *    (input) The value to write to the pin (must be 0 or 1).
- */
-void GPIO_write_atomic(GPIO_TypeDef * const GPIOx
-	, uint32_t const pin
-	, uint32_t const val
-);
+		/**
+		 * @brief Writes a value to the GPIO pin.
+		 * @param [in] val
+		 *    The value to write to the GPIO pin.
+		 * @return GPIO pin status.
+		 */
+		status write(uint32_t const val);
 
-/*! Reads from a GPIO input pin.
- *
- * @param GPIOx
- *    (input) The GPIO port. See device/registers/stm32f767zi_registers_GPIO.h for options.
- * @param pin
- *    (input) The pin number to read from (must be between 0 and 15, inclusive).
- */
-uint32_t GPIO_read(GPIO_TypeDef * const GPIOx
-	, uint32_t const pin
-);
+		/**
+		 * @brief Writes a value to the GPIO pin atomically.
+		 * @param [in] val
+		 *    The value to write to the GPIO pin.
+		 * @return GPIO pin status.
+		 */
+		status write_atomic(uint32_t const val);
 
-/*! Toggles a GPIO output pin.
- *
- * @param GPIOx
- *    (input) The GPIO port. See device/registers/stm32f767zi_registers_GPIO.h for options.
- * @param pin
- *    (input) The pin number to toggle (must be between 0 and 15, inclusive).
- */
-void GPIO_toggle(GPIO_TypeDef * const GPIOx
-	, uint32_t const pin
-);
+		/**
+		 * @brief Writes a value to the GPIO pin atomically.
+		 * @brief Reads the current state of the GPIO pin.
+		 * @param [inout] val
+		 *    The current state of the GPIO pin.
+		 * @return GPIO pin status.
+		 */
+		status read(uint32_t &val);
 
-#ifdef __cplusplus
+		/**
+		 * @brief Toggles the GPIO pin.
+		 * @return GPIO pin status.
+		 */
+		status toggle();
+	};
 }
-#endif
 
 #endif /* DRIVER_GPIO_H */
 

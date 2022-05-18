@@ -2,37 +2,41 @@
 #include "FreeRTOSConfig.h"
 #include <stdint.h>
 
-/* ============================================================================================================= */
-/* External References                                                                                           */
-/* ============================================================================================================= */
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+/* ============================================================================================== */
+/* External References                                                                            */
+/* ============================================================================================== */
 extern int main(void);
 
-/* ============================================================================================================= */
-/* Heap Declaration                                                                                              */
-/* ============================================================================================================= */
+/* ============================================================================================== */
+/* Heap Declaration                                                                               */
+/* ============================================================================================== */
 uint8_t ucHeap[configTOTAL_HEAP_SIZE] __attribute__((section(".heap")));
 
-/* ============================================================================================================= */
-/* Memory Region Symbols (Provided by Linker Script)                                                             */
-/* ============================================================================================================= */
-extern uint32_t __gst_start__;       //!# Start of the global section table
-extern uint32_t __gst_end__;         //!# End of the global section table
-extern uint32_t __etext;             //!# End of text segment
-extern uint32_t __fast_text_start__; //!# Start of the fast_text segment
-extern uint32_t __fast_text_end__;   //!# End of the fast_text segment
-extern uint32_t __data_start__;      //!# Start of the data segment
-extern uint32_t __data_end__;        //!# End of the data segment
-extern uint32_t __bss_start__;       //!# Start of the BSS segment
-extern uint32_t __bss_end__;         //!# End of the BSS segment
-extern uint32_t __heap_base;         //!# Base of the memory region allocated for the heap
-extern uint32_t __heap_limit;        //!# Limit of the memory region allocated for the heap
-extern uint32_t __stack_limit;       //!# Limit of the stack
-extern uint32_t __stack_top;         //!# Top of the stack
-extern uint32_t __stack_base;        //!# Base of the stack
+/* ============================================================================================== */
+/* Memory Region Symbols (Provided by Linker Script)                                              */
+/* ============================================================================================== */
+extern uint32_t __gst_start__;       // Start of the global section table
+extern uint32_t __gst_end__;         // End of the global section table
+extern uint32_t __etext;             // End of text segment
+extern uint32_t __fast_text_start__; // Start of the fast_text segment
+extern uint32_t __fast_text_end__;   // End of the fast_text segment
+extern uint32_t __data_start__;      // Start of the data segment
+extern uint32_t __data_end__;        // End of the data segment
+extern uint32_t __bss_start__;       // Start of the BSS segment
+extern uint32_t __bss_end__;         // End of the BSS segment
+extern uint32_t __heap_base;         // Base of the memory region allocated for the heap
+extern uint32_t __heap_limit;        // Limit of the memory region allocated for the heap
+extern uint32_t __stack_limit;       // Limit of the stack
+extern uint32_t __stack_top;         // Top of the stack
+extern uint32_t __stack_base;        // Base of the stack
 
-/* ============================================================================================================= */
-/* Cortex-M7 Processor Exception Handlers                                                                        */
-/* ============================================================================================================= */
+/* ============================================================================================== */
+/* Cortex-M7 Processor Exception Handlers                                                         */
+/* ============================================================================================== */
 void Default_Handler           (void);
 void Reset_Handler             (void);
 void NMI_Handler               (void) __attribute__((weak, alias("Default_Handler")));
@@ -45,9 +49,9 @@ void DebugMon_Handler          (void) __attribute__((weak, alias("Default_Handle
 void PendSV_Handler            (void) __attribute__((weak, alias("Default_Handler")));
 void SysTick_Handler           (void) __attribute__((weak, alias("Default_Handler")));
 
-/* ============================================================================================================= */
-/* External Interrupt Handlers                                                                                   */
-/* ============================================================================================================= */
+/* ============================================================================================== */
+/* External Interrupt Handlers                                                                    */
+/* ============================================================================================== */
 void WWDG_Handler              (void) __attribute__((weak, alias("Default_Handler")));
 void PVD_Handler               (void) __attribute__((weak, alias("Default_Handler")));
 void TAMP_STAMP_Handler        (void) __attribute__((weak, alias("Default_Handler")));
@@ -159,9 +163,9 @@ void CAN3_SCE_Handler          (void) __attribute__((weak, alias("Default_Handle
 void JPEG_Handler              (void) __attribute__((weak, alias("Default_Handler")));
 void MDIOS_Handler             (void) __attribute__((weak, alias("Default_Handler")));
 
-/* ============================================================================================================= */
-/* Interrupt Vector Table                                                                                        */
-/* ============================================================================================================= */
+/* ============================================================================================== */
+/* Interrupt Vector Table                                                                         */
+/* ============================================================================================== */
 #if defined (__GNUC__)
 	#pragma GCC diagnostic push
 	#pragma GCC diagnostic ignored "-Wpedantic"
@@ -304,25 +308,27 @@ __VECTOR_TABLE_ATTRIBUTE void (* const vector_table[])(void) = {
 	#pragma GCC diagnostic pop
 #endif
 
-/* ============================================================================================================= */
-/* Reset Handler                                                                                                 */
-/* ============================================================================================================= */
-/*! The code to be run on processor POR.
+/* ============================================================================================== */
+/* Reset Handler                                                                                  */
+/* ============================================================================================== */
+/**
+ * @details The reset handler is run on processor POR and copies any .text.fast_text instructions
+ *          stored in flash into instruction TCM, any .data stored in flash in data TCM, and
+ *          zeroes-out the .bss section, then performs the SystemInit() call before entering main.
  *
- * @brief The reset handler is run on processor POR and copies any .text.fast_text instructions stored in flash
- *        into instruction TCM, any .data stored in flash in data TCM, and zeroes-out the .bss section, then
- *        performs the SystemInit() call before entering main.
+ *          The gst or global section table contains (in this exact order for an arbitrary linker
+ *          output section):
+ *          4 bytes representing said section's LMA, 4 bytes representing said section's VMA, and 4
+ *          bytes representing the length of said section in bytes. There can be as many of these
+ *          triplets of values as there are linker output sections that need to be moved to their
+ *          VMA from their LMA.
  *
- *        The gst or global section table contains (in this exact order for an arbitrary linker output section):
- *        4 bytes representing said section's LMA, 4 bytes representing said section's VMA, and 4 bytes
- *        representing the length of said section in bytes. There can be as many of these triplets of values as
- *        there are linker output sections that need to be moved to their VMA from their LMA.
- *
- *        Thus to move, for example, the .text.fast_text from flash to instruction TCM, we get the address of the
- *        start of the gst (which is equivalent to the first entry in the table i.e. the .text.fast_text's LMA) and
- *        the next 4 bytes after that which contains the .text.fast_text section's VMA. The next 4 bytes after
- *        that contain the .text.fast_text section's length, then it is simply a for-loop to transfer the data
- *        from the VMA to the LMA.
+ *          Thus to move, for example, the .text.fast_text from flash to instruction TCM, we get
+ *          the address of the start of the gst (which is equivalent to the first entry in the
+ *          table i.e. the .text.fast_text's LMA) and the next 4 bytes after that which contains
+ *          the .text.fast_text section's VMA. The next 4 bytes after that contain the .text
+ *          fast_text section's length, then it is simply a for-loop to transfer the data from the
+ *          VMA to the LMA.
  */
 __NO_RETURN void Reset_Handler(void)
 {
@@ -332,7 +338,7 @@ __NO_RETURN void Reset_Handler(void)
 	uint32_t * VMA_addr    = 0;
 	uint32_t * gst_addr    = (uint32_t *)(&__gst_start__);
 
-	//!# Copy the .text.fast_text section from flash to ITCM
+	/* Copy the .text.fast_text section from flash to ITCM */
 	LMA_addr    = (uint32_t *)(*gst_addr);
 	VMA_addr    = (uint32_t *)(*++gst_addr);
 	section_len = *++gst_addr;
@@ -340,7 +346,7 @@ __NO_RETURN void Reset_Handler(void)
 		*VMA_addr++ = *LMA_addr++;
 	}
 
-	//!# Copy the .data section from flash to main SRAM
+	/* Copy the .data section from flash to main SRAM */
 	LMA_addr    = (uint32_t *)(*++gst_addr);
 	VMA_addr    = (uint32_t *)(*++gst_addr);
 	section_len = *++gst_addr;
@@ -348,7 +354,7 @@ __NO_RETURN void Reset_Handler(void)
 		*VMA_addr++ = *LMA_addr++;
 	}
 
-	//!# Zero-out the .bss section
+	/* Zero-out the .bss section */
 	for (VMA_addr = &__bss_start__; VMA_addr < &__bss_end__;) {
 		*VMA_addr++ = 0UL;
 	}
@@ -361,12 +367,16 @@ __NO_RETURN void Reset_Handler(void)
 	while (1);
 }
 
-/* ============================================================================================================= */
-/* Default Handler for Exceptions/Interrupts                                                                     */
-/* ============================================================================================================= */
+/* ============================================================================================== */
+/* Default Handler for Exceptions/Interrupts                                                      */
+/* ============================================================================================== */
 void Default_Handler(void)
 {
 	while (1);
 }
+
+#ifdef __cplusplus
+}
+#endif
 
 /* EOF */
