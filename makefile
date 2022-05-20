@@ -118,14 +118,16 @@ SOURCES = \
 	event_groups.c                   list.c                           queue.c               \
 	stream_buffer.c                  tasks.c                          timers.c              \
 	startup_stm32f767zi.c            system_stm32f767zi.c             main.cpp              \
-	driver_GPIO.cpp                  onboard_led.cpp                  dartlead_assert.c
+	driver_GPIO.cpp                  onboard_led.cpp                  dartlead_assert.c     \
+	driver_USART.cpp
 
 OBJECTS = \
-	bin/output/port.o                bin/output/heap_4.o              bin/output/croutine.o \
-	bin/output/event_groups.o        bin/output/list.o                bin/output/queue.o    \
-	bin/output/stream_buffer.o       bin/output/tasks.o               bin/output/timers.o   \
-	bin/output/startup_stm32f767zi.o bin/output/system_stm32f767zi.o  bin/output/main.o     \
-	bin/output/driver_GPIO.o         bin/output/onboard_led.o         bin/output/dartlead_assert.o
+	bin/output/port.o                bin/output/heap_4.o              bin/output/croutine.o        \
+	bin/output/event_groups.o        bin/output/list.o                bin/output/queue.o           \
+	bin/output/stream_buffer.o       bin/output/tasks.o               bin/output/timers.o          \
+	bin/output/startup_stm32f767zi.o bin/output/system_stm32f767zi.o  bin/output/main.o            \
+	bin/output/driver_GPIO.o         bin/output/onboard_led.o         bin/output/dartlead_assert.o \
+	bin/output/driver_USART.o
 
 # ==================================================================================================
 # Rules
@@ -187,3 +189,5 @@ bin/output/onboard_led.o : src/hw/onboard_led.cpp
 	@$(CPPC) $(CM7_FLAGS) $(CPP_FLAGS) $(INCLUDE_DIRS) -c $< -o $@
 bin/output/dartlead_assert.o : lib/libdartlead/dartlead_assert.c
 	@$(CC) $(CM7_FLAGS) $(C_FLAGS) $(INCLUDE_DIRS) -c $< -o $@
+bin/output/driver_USART.o : src/drivers/driver_USART.cpp
+	@$(CPPC) $(CM7_FLAGS) $(CPP_FLAGS) $(INCLUDE_DIRS) -c $< -o $@

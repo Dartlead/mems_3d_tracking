@@ -4,8 +4,7 @@
 #include <cstdint>
 #include "stm32f767zi.h"
 
-namespace GPIO
-{
+namespace GPIO {
 	/**
 	 * @enum Enumeration of all available GPIO ports.
 	 */

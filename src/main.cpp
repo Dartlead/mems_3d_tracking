@@ -30,6 +30,10 @@ static void __attribute__((section(".text.fast_text"))) LED_toggle_task(void * p
 
 int main(void)
 {
+
+
+
+
 	xTaskCreate(LED_toggle_task, "LED toggle", 500, NULL, 1, NULL);
 
 	vTaskStartScheduler();

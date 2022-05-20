@@ -160,6 +160,7 @@ typedef enum IRQn
 #include "stm32f767zi_registers_GPIO.h"
 #include "stm32f767zi_registers_PWR.h"
 #include "stm32f767zi_registers_RCC.h"
+#include "stm32f767zi_registers_USART.h"
 
 #ifdef __cplusplus
 }
