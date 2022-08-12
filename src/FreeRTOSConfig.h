@@ -36,8 +36,6 @@
 
 #include <stddef.h>
 
-#include "dartlead_assert.h"
-
 /*-----------------------------------------------------------
  * Application specific definitions.
  *
@@ -54,7 +52,6 @@
 #define configUSE_PORT_OPTIMISED_TASK_SELECTION      0
 #define configUSE_TICKLESS_IDLE                      0
 #define configCPU_CLOCK_HZ                           ( SystemCoreClock )
-//#define configSYSTICK_CLOCK_HZ                  1000000
 #define configTICK_RATE_HZ                           ( (TickType_t)250 )
 #define configMAX_PRIORITIES                         5
 #define configMINIMAL_STACK_SIZE                     ( (unsigned short) 128 )
@@ -119,9 +116,9 @@
 /* Cortex-M specific definitions. */
 #ifdef __NVIC_PRIO_BITS
 	/* __NVIC_PRIO_BITS will be specified when CMSIS is being used. */
-	#define configPRIO_BITS                           __NVIC_PRIO_BITS
+	#define configPRIO_BITS                          __NVIC_PRIO_BITS
 #else
-	#define configPRIO_BITS                           4 /* 15 priority levels */
+	#define configPRIO_BITS                          4 /* 15 priority levels */
 #endif
 
 /* The lowest interrupt priority that can be used in a call to a "set priority" function. */
@@ -143,17 +140,6 @@
 #define xPortPendSVHandler                           PendSV_Handler
 #define vPortSVCHandler                              SVC_Handler
 #define xPortSysTickHandler                          SysTick_Handler
-
-/* Assert definition */
-#define configASSERT( EXPR ) \
-	do { \
-		if (!(EXPR)) { \
-			taskDISABLE_INTERRUPTS(); \
-			dartlead_assert(); \
-		} \
-	} while (0)
-
-#define WTF configASSERT(0)
 
 #endif /* FREERTOS_CONFIG_H */
 
